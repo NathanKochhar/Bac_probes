@@ -1,0 +1,6 @@
+silva_db/
+*.egg-info/
+__pycache__/
+*.py[cod]
+*.tsv
+.DS_Store

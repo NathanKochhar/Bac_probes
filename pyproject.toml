@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bac-probes"
+version = "0.1.0"
+description = "Find taxon-specific 16S rRNA k-mers for bacterial classification"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "biopython>=1.80",
+    "click>=8.1",
+    "pandas>=2.0",
+    "tqdm>=4.60",
+]
+
+[project.scripts]
+bac-probes = "bac_probes.cli:cli"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["bac_probes*"]
