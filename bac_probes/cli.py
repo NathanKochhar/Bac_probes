@@ -157,15 +157,24 @@ def find(
 
     \b
     Output columns:
-      kmer                – k-mer sequence (same strand as SILVA reference)
-      probe               – reverse complement (the actual probe/primer sequence)
-      gc_pct              – GC content (%)
-      conservation_pct    – % of target sequences containing this k-mer exactly
-      target_seqs         – number of target sequences used
-      exact_offtarget     – number of non-target SILVA seqs containing it exactly
-      exact_bg_seqs       – total non-target sequences scanned
-      exact_specificity   – 1 − (exact_offtarget / exact_bg_seqs)
-      blast_*             – BLAST-based near-match scores (if --blast)
+      kmer                       – k-mer sequence (same strand as SILVA reference)
+      probe                      – reverse complement (the actual probe/primer sequence)
+      gc_pct                     – GC content (%)
+      conservation_pct           – % of target sequences containing this k-mer exactly
+      target_seqs                – number of target sequences used
+      exact_offtarget            – number of non-target SILVA seqs containing it exactly
+      exact_bg_seqs              – total non-target sequences scanned
+      exact_specificity          – 1 − (exact_offtarget / exact_bg_seqs)
+      blast_total_hits           – total BLAST hits (if --blast)
+      blast_target_hits          – BLAST hits within target taxon
+      blast_offtarget_hits       – raw count of off-target BLAST hits
+      blast_weighted_offtarget   – off-target hits weighted by mismatch position;
+                                   central mismatches score near 0 (unlikely to bind),
+                                   terminal mismatches score near 1 (may still bind)
+      blast_specificity          – target_hits / total_hits (raw)
+      blast_weighted_specificity – target_hits / (target_hits + weighted_offtarget);
+                                   primary ranking metric for Xenium probe design
+      blast_top_offtarget        – most frequent off-target taxon
     """
     silva_path = Path(silva_fasta)
     blast_db_path = Path(blast_db) if blast_db else Path("silva_db/silva")
@@ -281,26 +290,22 @@ def find(
             )
             blast_scores = parse_blast_results(blast_out, top_kmers, target_name, level)
 
-            df["blast_total_hits"] = df["kmer"].map(
-                lambda k: blast_scores.get(k, {}).get("blast_total_hits", pd.NA)
-            )
-            df["blast_target_hits"] = df["kmer"].map(
-                lambda k: blast_scores.get(k, {}).get("blast_target_hits", pd.NA)
-            )
-            df["blast_offtarget_hits"] = df["kmer"].map(
-                lambda k: blast_scores.get(k, {}).get("blast_offtarget_hits", pd.NA)
-            )
-            df["blast_specificity"] = df["kmer"].map(
-                lambda k: blast_scores.get(k, {}).get("blast_specificity", pd.NA)
-            )
-            df["blast_top_offtarget"] = df["kmer"].map(
-                lambda k: blast_scores.get(k, {}).get("blast_top_offtarget", "")
-            )
+            for col, key in [
+                ("blast_total_hits",           "blast_total_hits"),
+                ("blast_target_hits",          "blast_target_hits"),
+                ("blast_offtarget_hits",       "blast_offtarget_hits"),
+                ("blast_weighted_offtarget",   "blast_weighted_offtarget"),
+                ("blast_specificity",          "blast_specificity"),
+                ("blast_weighted_specificity", "blast_weighted_specificity"),
+                ("blast_top_offtarget",        "blast_top_offtarget"),
+            ]:
+                default = "" if col == "blast_top_offtarget" else pd.NA
+                df[col] = df["kmer"].map(lambda k, _k=key, _d=default: blast_scores.get(k, {}).get(_k, _d))
 
-            # Re-sort including BLAST score for candidates that have it
-            blast_mask = df["blast_specificity"].notna()
+            # Re-sort: weighted specificity is the primary metric for Xenium probes
+            blast_mask = df["blast_weighted_specificity"].notna()
             df_blasted = df[blast_mask].sort_values(
-                ["blast_specificity", "conservation_pct"], ascending=[False, False]
+                ["blast_weighted_specificity", "conservation_pct"], ascending=[False, False]
             )
             df_rest = df[~blast_mask]
             df = pd.concat([df_blasted, df_rest], ignore_index=True)
@@ -312,8 +317,8 @@ def find(
     click.echo(f"Total k-mer candidates: {len(df):,}")
 
     display_cols = ["kmer", "gc_pct", "conservation_pct", "exact_specificity"]
-    if "blast_specificity" in df.columns:
-        display_cols.append("blast_specificity")
+    if "blast_weighted_specificity" in df.columns:
+        display_cols += ["blast_specificity", "blast_weighted_specificity"]
 
     click.echo("\nTop 10 candidates:")
     click.echo(df[display_cols].head(10).to_string(index=False))
