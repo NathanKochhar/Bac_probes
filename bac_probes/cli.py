@@ -40,7 +40,7 @@ def cli() -> None:
     help="Directory to save the SILVA FASTA file.",
 )
 def download(output_dir: str) -> None:
-    """Download the SILVA 138.1 NR99 16S SSU reference database (~1.5 GB)."""
+    """Download the SILVA 138.1 NR99 16S SSU reference database (~1 GB compressed)."""
     download_silva(output_dir)
 
 
@@ -309,13 +309,17 @@ def find(
             click.echo(f"\nBLASTing top {n_blast} candidates (identity ≥ {blast_identity:.0f}%) …")
             top_kmers: list[str] = df.head(n_blast)["kmer"].tolist()
 
+            max_tseqs = 1000
             blast_out = run_blast(
                 top_kmers,
                 blast_db_path,
                 threads=threads,
                 perc_identity=blast_identity,
+                max_target_seqs=max_tseqs,
             )
-            blast_scores = parse_blast_results(blast_out, top_kmers, target_name, level)
+            blast_scores = parse_blast_results(
+                blast_out, top_kmers, target_name, level, max_target_seqs=max_tseqs
+            )
 
             for col, key in [
                 ("blast_total_hits",           "blast_total_hits"),
@@ -325,9 +329,18 @@ def find(
                 ("blast_specificity",          "blast_specificity"),
                 ("blast_weighted_specificity", "blast_weighted_specificity"),
                 ("blast_top_offtarget",        "blast_top_offtarget"),
+                ("blast_capped",               "blast_capped"),
             ]:
                 default = "" if col == "blast_top_offtarget" else pd.NA
                 df[col] = df["kmer"].map(lambda k, _k=key, _d=default: blast_scores.get(k, {}).get(_k, _d))
+
+            n_capped = df["blast_capped"].sum() if "blast_capped" in df.columns else 0
+            if n_capped:
+                click.echo(
+                    f"  WARNING: {n_capped} probe(s) hit the BLAST max_target_seqs={max_tseqs} cap — "
+                    "blast_specificity may be underestimated for large target taxa.",
+                    err=True,
+                )
 
             # Re-sort: weighted specificity is the primary metric for Xenium probes
             blast_mask = df["blast_weighted_specificity"].notna()
@@ -343,9 +356,9 @@ def find(
     click.echo(f"\nResults written to: {output}")
     click.echo(f"Total k-mer candidates: {len(df):,}")
 
-    display_cols = ["kmer", "gc_pct", "conservation_pct", "exact_specificity"]
+    display_cols = ["kmer", "gc_pct", "conservation_pct", "exact_offtarget", "exact_specificity"]
     if "blast_weighted_specificity" in df.columns:
-        display_cols += ["blast_specificity", "blast_weighted_specificity"]
+        display_cols += ["blast_offtarget_hits", "blast_specificity", "blast_weighted_specificity", "blast_top_offtarget"]
 
     click.echo("\nTop 10 candidates:")
     click.echo(df[display_cols].head(10).to_string(index=False))

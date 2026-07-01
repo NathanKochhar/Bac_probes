@@ -190,11 +190,13 @@ def list_taxa(fasta_path: str | Path, level: str) -> list[tuple[str, int]]:
     Return (taxon_name, sequence_count) pairs for all taxa at the given level,
     sorted by descending sequence count.
     """
+    from tqdm import tqdm
+
     if level not in TAXONOMY_LEVELS:
         raise ValueError(f"Unknown level '{level}'. Choose from: {TAXONOMY_LEVELS}")
 
     counts: dict[str, int] = {}
-    for _, taxonomy, _ in iter_silva(fasta_path):
+    for _, taxonomy, _ in tqdm(iter_silva(fasta_path), desc="  scanning", unit=" seq"):
         name = taxonomy.get(level, "")
         if name:
             counts[name] = counts.get(name, 0) + 1

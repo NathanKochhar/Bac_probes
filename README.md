@@ -50,16 +50,16 @@ Gap characters (`.` / `-`) from the multiple sequence alignment are stripped aut
 ### 2. Build BLAST database *(optional but recommended)*
 
 ```bash
-bac-probes build-db ./silva_db/SILVA_138.1_SSURef_NR99_tax_silva.fasta.gz \
+bac-probes build-db ./silva_db/SILVA_138.1_SSURef_NR99_tax_silva_full_align_trunc.fasta.gz \
     --db-dir ./silva_db
 ```
 
-Decompresses the FASTA and runs `makeblastdb`. Takes a few minutes. Required for `--blast` scoring.
+Strips alignment gaps, then runs `makeblastdb`. Takes a few minutes. Required for `--blast` scoring.
 
 ### 3. Browse taxon names
 
 ```bash
-bac-probes list-taxa ./silva_db/SILVA_138.1_SSURef_NR99_tax_silva.fasta.gz \
+bac-probes list-taxa ./silva_db/SILVA_138.1_SSURef_NR99_tax_silva_full_align_trunc.fasta.gz \
     --level genus --top 50
 ```
 
@@ -69,13 +69,13 @@ Useful for finding the exact spelling expected by the `find` command.
 
 ```bash
 # Genus-level (default)
-bac-probes find ./silva_db/SILVA_138.1_SSURef_NR99_tax_silva.fasta.gz \
+bac-probes find ./silva_db/SILVA_138.1_SSURef_NR99_tax_silva_full_align_trunc.fasta.gz \
     Streptococcus \
     --level genus \
     --output streptococcus_probes.tsv
 
 # Phylum-level, stricter conservation, no BLAST
-bac-probes find ./silva_db/SILVA_138.1_SSURef_NR99_tax_silva.fasta.gz \
+bac-probes find ./silva_db/SILVA_138.1_SSURef_NR99_tax_silva_full_align_trunc.fasta.gz \
     Firmicutes \
     --level phylum \
     --min-conservation 0.90 \
@@ -83,7 +83,7 @@ bac-probes find ./silva_db/SILVA_138.1_SSURef_NR99_tax_silva.fasta.gz \
     --output firmicutes_probes.tsv
 
 # Species-level, custom k-mer size
-bac-probes find ./silva_db/SILVA_138.1_SSURef_NR99_tax_silva.fasta.gz \
+bac-probes find ./silva_db/SILVA_138.1_SSURef_NR99_tax_silva_full_align_trunc.fasta.gz \
     "Escherichia coli" \
     --level species \
     --kmer-size 28 \

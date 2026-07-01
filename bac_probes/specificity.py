@@ -146,6 +146,7 @@ def parse_blast_results(
     kmers: list[str],
     target_name: str,
     level: str,
+    max_target_seqs: int = 1000,
 ) -> dict[str, dict]:
     """
     Parse tabular BLAST output and classify every hit as on-target or off-target.
@@ -225,6 +226,9 @@ def parse_blast_results(
             "blast_specificity": round(spec_raw, 6),
             "blast_weighted_specificity": round(spec_weighted, 6),
             "blast_top_offtarget": top_ot_list[0][0] if top_ot_list else "",
+            # True when BLAST returned exactly max_target_seqs hits — specificity
+            # estimates are unreliable because the result set is truncated.
+            "blast_capped": total_raw >= max_target_seqs,
         }
 
     return results
