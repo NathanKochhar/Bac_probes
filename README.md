@@ -14,16 +14,16 @@ Uses the [SILVA 138.1 NR99](https://www.arb-silva.de/) SSU reference database (~
 
 ### Position-weighted scoring (Xenium-specific)
 
-Each off-target BLAST hit is assigned an **effective binding score** in [0, 1]:
+Each off-target BLAST hit is assigned a **specificity score** in [0, 1], where **1 = specific** (off-target won't bind) and **0 = non-specific** (off-target will bind):
 
 ```
 weight(pos) = sin(π × (pos + 0.5) / k)²
-binding_score = max(0, 1 − Σ weight(mismatch_positions))
+specificity_score = min(1, Σ weight(mismatch_positions))
 ```
 
-- A perfect-match hit scores **1.0** (certain off-target binding).
-- A single central mismatch (pos ≈ k/2) has weight ≈ 1.0 → binding score ≈ **0.0** (probe unlikely to hybridise).
-- A single terminal mismatch (pos = 0 or k−1) has weight ≈ 0.002 → binding score ≈ **0.998** (probe may still bind).
+- A perfect-match hit scores **0.0** (certain off-target binding — probe is not protected).
+- A single central mismatch (pos ≈ k/2) has weight ≈ 1.0 → specificity score ≈ **1.0** (probe won't hybridise — well protected).
+- A single terminal mismatch (pos = 0 or k−1) has weight ≈ 0.002 → specificity score ≈ **0.002** (probe may still bind — minimal protection).
 
 The `blast_weighted_specificity` column uses these scores instead of raw hit counts, making it a better predictor of real-world probe performance than `blast_specificity`.
 
@@ -173,7 +173,7 @@ For 32-mers, BLAST identity thresholds have a discrete effect:
 
 | Identity | Max mismatches in 32 bp | Note |
 |---|---|---|
-| 97% | 0 | Equivalent to exact match; all off-target hits have `binding_score = 1.0` |
+| 97% | 0 | Equivalent to exact match; all off-target hits have `specificity_score = 0.0` (no mismatch protection) |
 | 90% | 3 | Catches near-misses; position weighting meaningful |
 | 85% (default) | 4 | Broader near-miss coverage |
 

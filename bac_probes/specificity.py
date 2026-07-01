@@ -70,23 +70,23 @@ def _parse_btop(btop: str) -> list[int]:
 
 def effective_binding_score(mismatch_positions: list[int], k: int) -> float:
     """
-    Estimate the relative probability that an off-target sequence would still
-    hybridise to the probe, given where its mismatches fall.
+    Probe specificity score against a single off-target hit, given where its
+    mismatches fall relative to the probe centre.
 
-    The penalty is the sum of position weights for all mismatches. This is
-    normalised so that a single perfectly-central mismatch (weight = 1.0)
-    brings the binding score to 0.0 (extremely unlikely to bind), while an
-    end mismatch (weight ≈ 0) contributes almost nothing.
+    Returns a value in [0, 1] where **1 = specific** (off-target won't bind)
+    and **0 = non-specific** (off-target will bind):
+        0.0  – perfect match  → certain off-target binding (no protection)
+        ~1.0 – one central mismatch → off-target unlikely to hybridise (well protected)
+        ~0.002 – one terminal mismatch → off-target may still bind (minimal protection)
 
-    Returns a value in [0, 1]:
-        1.0  – perfect match  → certain off-target binding
-        ~0.5 – one end mismatch  → moderate concern
-        ~0.0 – one central mismatch → unlikely to bind (good for probe specificity)
+    The score is the sum of position weights clamped to [0, 1]. A single
+    perfectly-central mismatch (weight = 1.0) fully protects the probe, while
+    a terminal mismatch (weight ≈ 0.002) provides almost no protection.
     """
     if not mismatch_positions:
-        return 1.0
+        return 0.0
     penalty = sum(mismatch_weight(p, k) for p in mismatch_positions)
-    return max(0.0, 1.0 - penalty)
+    return min(1.0, penalty)
 
 
 # ── BLAST interface ───────────────────────────────────────────────────────────
@@ -200,9 +200,9 @@ def parse_blast_results(
             data[kmer]["target"] += 1
         else:
             mismatch_pos = _parse_btop(btop)
-            binding = effective_binding_score(mismatch_pos, len(kmer))
+            specificity = effective_binding_score(mismatch_pos, len(kmer))
             data[kmer]["offtarget_raw"] += 1
-            data[kmer]["offtarget_weighted"] += binding
+            data[kmer]["offtarget_weighted"] += (1.0 - specificity)  # binding concern = 1 - specificity
             if hit_taxon:
                 data[kmer]["offtarget_taxa"][hit_taxon] += 1
 

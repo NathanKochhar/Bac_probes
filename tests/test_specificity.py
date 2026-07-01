@@ -77,26 +77,28 @@ def test_btop_no_match_prefix():
 # ── effective_binding_score ───────────────────────────────────────────────────
 
 def test_binding_perfect_match():
-    assert effective_binding_score([], k=32) == 1.0
+    # No mismatches → no protection → 0.0 (off-target will bind)
+    assert effective_binding_score([], k=32) == 0.0
 
-def test_binding_center_mismatch_kills_score():
-    # Single central mismatch (pos 15) has weight ≈ 1.0 → score ≈ 0
+def test_binding_center_mismatch_maximal_protection():
+    # Single central mismatch (pos 15) has weight ≈ 1.0 → score ≈ 1.0 (well protected)
     score = effective_binding_score([15], k=32)
-    assert score == pytest.approx(0.0, abs=0.02)
+    assert score == pytest.approx(1.0, abs=0.02)
 
-def test_binding_end_mismatch_preserves_score():
-    # End mismatch (pos 0) has weight ≈ 0.002 → score ≈ 0.998
+def test_binding_end_mismatch_minimal_protection():
+    # End mismatch (pos 0) has weight ≈ 0.002 → score ≈ 0.002 (minimal protection)
     score = effective_binding_score([0], k=32)
-    assert score == pytest.approx(0.998, abs=0.01)
+    assert score == pytest.approx(0.002, abs=0.01)
 
-def test_binding_clamped_at_zero():
-    # Multiple heavy mismatches should not produce negative scores
+def test_binding_clamped_at_one():
+    # Multiple heavy mismatches should not exceed 1.0
     score = effective_binding_score([14, 15, 16], k=32)
-    assert score >= 0.0
+    assert score <= 1.0
 
 def test_binding_two_end_mismatches():
+    # Two terminal mismatches provide minimal combined protection (~0.005)
     score = effective_binding_score([0, 31], k=32)
-    assert score > 0.99  # two tiny-weight mismatches barely affect it
+    assert score < 0.01
 
 
 # ── parse_blast_results ───────────────────────────────────────────────────────

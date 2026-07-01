@@ -177,9 +177,9 @@ def find(
       blast_total_hits           – total BLAST hits (if --blast)
       blast_target_hits          – BLAST hits within target taxon
       blast_offtarget_hits       – raw count of off-target BLAST hits
-      blast_weighted_offtarget   – off-target hits weighted by mismatch position;
-                                   central mismatches score near 0 (unlikely to bind),
-                                   terminal mismatches score near 1 (may still bind)
+      blast_weighted_offtarget   – off-target hits weighted by binding concern;
+                                   central mismatches contribute ~0 (unlikely to bind),
+                                   terminal mismatches contribute ~1 (may still bind)
       blast_specificity          – target_hits / total_hits (raw)
       blast_weighted_specificity – target_hits / (target_hits + weighted_offtarget);
                                    primary ranking metric for Xenium probe design
