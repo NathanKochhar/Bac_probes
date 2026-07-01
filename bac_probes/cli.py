@@ -362,3 +362,159 @@ def find(
 
     click.echo("\nTop 10 candidates:")
     click.echo(df[display_cols].head(10).to_string(index=False))
+
+
+# ─── coverage ──────────────────────────────────────────────────────────────────
+
+@cli.command()
+@click.argument("silva_fasta")
+@click.argument("target_name")
+@click.option(
+    "--level", "-l",
+    type=click.Choice(TAXONOMY_LEVELS, case_sensitive=False),
+    default="genus", show_default=True,
+    help="Taxonomic level for TARGET_NAME.",
+)
+@click.option(
+    "--breakdown", "-b",
+    type=click.Choice(TAXONOMY_LEVELS, case_sensitive=False),
+    default="species", show_default=True,
+    help="Sub-level to break coverage down by.",
+)
+@click.option(
+    "--kmer", "kmers", multiple=True, metavar="SEQ",
+    help="K-mer sequence(s) to test (repeatable).",
+)
+@click.option(
+    "--from-tsv", default=None,
+    help="Auto-pick top k-mers from a 'bac-probes find' results TSV.",
+)
+@click.option(
+    "--top-n", default=3, show_default=True,
+    help="Number of top k-mers to pick from --from-tsv.",
+)
+@click.option(
+    "--min-seqs", default=5, show_default=True,
+    help="Minimum sequence count to show a breakdown row.",
+)
+@click.option(
+    "--output", "-o", default=None,
+    help="Write coverage table to this TSV path.",
+)
+def coverage(
+    silva_fasta: str,
+    target_name: str,
+    level: str,
+    breakdown: str,
+    kmers: tuple[str, ...],
+    from_tsv: str | None,
+    top_n: int,
+    min_seqs: int,
+    output: str | None,
+) -> None:
+    """Show per-taxon k-mer coverage for probes within a target group.
+
+    Scans SILVA sequences that belong to TARGET_NAME (at --level) and
+    reports what fraction contain each k-mer, broken down by --breakdown
+    sub-taxon (e.g., species within a genus).  Also reports pool coverage
+    (any k-mer hit).
+
+    \b
+    SILVA_FASTA  Path to the SILVA NR99 FASTA (gzipped or plain).
+    TARGET_NAME  Taxon to analyse (e.g. 'Fusobacterium').
+
+    Supply k-mers with --kmer or auto-pick top probes with --from-tsv:
+
+    \b
+    Examples:
+      bac-probes coverage silva_db/SILVA_*.fasta.gz Fusobacterium \\
+          --level genus --breakdown species \\
+          --kmer GATGGGGAAGCCAGCTTACTGGACAGATACTG \\
+          --kmer ATGCAGGGCTCAACTCTGTATTGCGTTGGAAA
+
+      bac-probes coverage silva_db/SILVA_*.fasta.gz Bacteroides \\
+          --from-tsv bacteroides_genus_probes.tsv --top-n 2
+    """
+    # ── Resolve k-mers ─────────────────────────────────────────────────────────
+    kmer_list: list[str] = list(kmers)
+    if from_tsv:
+        df_probes = pd.read_csv(from_tsv, sep="\t")
+        sort_col = (
+            "blast_weighted_specificity"
+            if "blast_weighted_specificity" in df_probes.columns
+            else "exact_specificity"
+        )
+        kmer_list = df_probes.nlargest(top_n, sort_col)["kmer"].tolist()
+        click.echo(f"Using top {len(kmer_list)} k-mers from {from_tsv}:")
+        for k in kmer_list:
+            click.echo(f"  {k}")
+        click.echo()
+
+    if not kmer_list:
+        click.echo("ERROR: supply at least one --kmer or use --from-tsv.", err=True)
+        sys.exit(1)
+
+    kmer_upper = [k.upper() for k in kmer_list]
+
+    # ── Scan SILVA ─────────────────────────────────────────────────────────────
+    target_lower = target_name.lower()
+    total: dict[str, int] = {}
+    hits: dict[str, dict[str, int]] = {k: {} for k in kmer_upper}
+    pool_hits: dict[str, int] = {}
+
+    click.echo(f"Scanning SILVA for '{target_name}' at level '{level}' …")
+    for _acc, taxonomy, seq in tqdm(iter_silva(Path(silva_fasta)), desc="  reading", unit=" seq"):
+        if taxonomy.get(level, "").lower() != target_lower:
+            continue
+        sub = taxonomy.get(breakdown, "") or "unknown"
+        total[sub] = total.get(sub, 0) + 1
+        any_hit = False
+        for k in kmer_upper:
+            if k in seq:
+                hits[k][sub] = hits[k].get(sub, 0) + 1
+                any_hit = True
+        if any_hit:
+            pool_hits[sub] = pool_hits.get(sub, 0) + 1
+
+    if not total:
+        click.echo(
+            f"ERROR: no sequences found for '{target_name}' at level '{level}'.", err=True
+        )
+        sys.exit(1)
+
+    # ── Build table ─────────────────────────────────────────────────────────────
+    short_labels = [f"k{i+1}_{k[:8]}" for i, k in enumerate(kmer_upper)]
+
+    rows = []
+    for sub, n in sorted(total.items(), key=lambda x: -x[1]):
+        if n < min_seqs:
+            continue
+        row: dict = {"subtaxon": sub, "total_seqs": n}
+        for label, k in zip(short_labels, kmer_upper):
+            h = hits[k].get(sub, 0)
+            row[label] = f"{h}/{n} ({h/n*100:.0f}%)"
+        ph = pool_hits.get(sub, 0)
+        row["pool_coverage"] = f"{ph}/{n} ({ph/n*100:.0f}%)"
+        rows.append(row)
+
+    # Summary row (all sequences)
+    n_all = sum(total.values())
+    summary: dict = {"subtaxon": "ALL", "total_seqs": n_all}
+    for label, k in zip(short_labels, kmer_upper):
+        h_all = sum(hits[k].values())
+        summary[label] = f"{h_all}/{n_all} ({h_all/n_all*100:.1f}%)"
+    ph_all = sum(pool_hits.values())
+    summary["pool_coverage"] = f"{ph_all}/{n_all} ({ph_all/n_all*100:.1f}%)"
+
+    df_out = pd.concat([pd.DataFrame([summary]), pd.DataFrame(rows)], ignore_index=True)
+
+    # ── Output ─────────────────────────────────────────────────────────────────
+    click.echo(f"\nK-mer key:")
+    for label, k in zip(short_labels, kmer_upper):
+        click.echo(f"  {label} = {k}")
+    click.echo()
+    click.echo(df_out.to_string(index=False))
+
+    if output:
+        df_out.to_csv(output, sep="\t", index=False)
+        click.echo(f"\nCoverage table written to {output}")

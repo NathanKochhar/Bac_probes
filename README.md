@@ -131,7 +131,33 @@ bac-probes find \
     --output fusobacterium_probes.tsv
 ```
 
+### 5. Inspect per-species coverage
+
+After finding genus-level probes, `bac-probes coverage` shows which species within the genus are covered by each k-mer — and what pool coverage looks like if you use multiple probes.
+
+```bash
+# Auto-pick top 2 probes from a find results TSV
+bac-probes coverage \
+    ./silva_db/SILVA_138.1_SSURef_NR99_tax_silva_full_align_trunc.fasta.gz \
+    Fusobacterium \
+    --level genus --breakdown species \
+    --from-tsv fusobacterium_probes.tsv --top-n 2
+
+# Or specify k-mers explicitly
+bac-probes coverage \
+    ./silva_db/SILVA_138.1_SSURef_NR99_tax_silva_full_align_trunc.fasta.gz \
+    Fusobacterium \
+    --level genus --breakdown species \
+    --kmer GATGGGGAAGCCAGCTTACTGGACAGATACTG \
+    --kmer ATGCAGGGCTCAACTCTGTATTGCGTTGGAAA \
+    --output fusobacterium_coverage.tsv
+```
+
+Output columns: `subtaxon`, `total_seqs`, one column per k-mer (`k1_…`, `k2_…`), and `pool_coverage` (sequences hit by any k-mer).
+
 ## Key options
+
+### `bac-probes find`
 
 | Option | Default | Description |
 |---|---|---|
@@ -147,6 +173,18 @@ bac-probes find \
 | `--threads` | `4` | CPU threads for BLAST |
 | `--target-fasta` | — | Supply target sequences from a plain FASTA (e.g. NCBI download) instead of SILVA |
 | `--output` | `probes.tsv` | Output TSV path |
+
+### `bac-probes coverage`
+
+| Option | Default | Description |
+|---|---|---|
+| `--level` | `genus` | Taxonomic level for the target name |
+| `--breakdown` | `species` | Sub-level to break coverage down by |
+| `--kmer SEQ` | — | K-mer(s) to test (repeatable) |
+| `--from-tsv FILE` | — | Auto-pick top k-mers from a `find` results TSV |
+| `--top-n` | `3` | Number of k-mers to pick from `--from-tsv` |
+| `--min-seqs` | `5` | Minimum sequences to include a breakdown row |
+| `--output` | — | Write table to TSV (default: stdout only) |
 
 ## Interpreting results
 
@@ -178,6 +216,19 @@ For 32-mers, BLAST identity thresholds have a discrete effect:
 | 85% (default) | 4 | Broader near-miss coverage |
 
 The default 85% provides the widest near-miss coverage. For a focused check on 1–2 mismatch near-matches, re-run BLAST at `--blast-identity 90`.
+
+### Taxon-level specificity expectations
+
+Specificity varies greatly by how phylogenetically isolated the target genus is:
+
+| Target | Exact off-targets | Notes |
+|---|---|---|
+| *Fusobacterium* (genus) | **0** | Phylogenetically isolated (Fusobacteriota phylum); excellent probes at genus level |
+| *Bacteroides* (genus) | ~10–15 | Bacteroidota; very specific, top off-target is Lachnospiraceae |
+| *Porphyromonas* (genus) | ~80–200 | Cross-reacts with *Tannerella* (same family); position weighting helps |
+| *Prevotella* (genus) | 600–900 | Indistinguishable from *Alloprevotella* at 16S k-mer level; genus-specific probes not feasible |
+
+**General guidance**: Genera with few close relatives in SILVA (isolated phyla or families) yield much cleaner probes than genera embedded in large, diverse orders like Bacteroidales or Lachnospirales. When `exact_offtarget` is high, check `blast_top_offtarget` — if the main cross-reactor is a genus you need to distinguish from, a different marker gene may be required.
 
 ## Memory and runtime
 
