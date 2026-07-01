@@ -191,8 +191,10 @@ def parse_blast_results(
         if kmer is None:
             continue
 
-        tax_str = stitle.split(" ", 1)[1] if " " in stitle else stitle
-        hit_taxon = parse_taxonomy(tax_str).get(level, "")
+        # stitle from a -parse_seqids BLAST db is the sequence description
+        # *after* the accession (i.e. the taxonomy string directly).
+        # Do not split on spaces — species names contain spaces.
+        hit_taxon = parse_taxonomy(stitle).get(level, "")
 
         if hit_taxon.lower() == target_name_lower:
             data[kmer]["target"] += 1
