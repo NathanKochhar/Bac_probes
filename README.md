@@ -44,7 +44,8 @@ conda install -c bioconda blast
 bac-probes download --output-dir ./silva_db
 ```
 
-Downloads `SILVA_138.1_SSURef_NR99_tax_silva.fasta.gz` (~1.5 GB) into `./silva_db/`.
+Downloads `SILVA_138.1_SSURef_NR99_tax_silva_full_align_trunc.fasta.gz` (~3 GB) into `./silva_db/`.
+Gap characters (`.` / `-`) from the multiple sequence alignment are stripped automatically on read.
 
 ### 2. Build BLAST database *(optional but recommended)*
 

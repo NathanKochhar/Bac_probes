@@ -1,5 +1,6 @@
 """SILVA 16S rRNA database download, parsing, and BLAST database construction."""
 
+import glob
 import gzip
 import shutil
 import subprocess
@@ -9,15 +10,57 @@ from typing import Iterator
 
 from Bio import SeqIO
 
+# Full-length alignment, truncated version — same taxonomy headers as the
+# unaligned release but sequences contain '.' / '-' gap characters that are
+# stripped on read.  Using this file keeps the tool aligned with the standard
+# SILVA release used by most 16S pipelines.
 SILVA_URL = (
-    "https://ftp.arb-silva.de/release_138_1/Exports/"
-    "SILVA_138.1_SSURef_NR99_tax_silva.fasta.gz"
+    "https://www.arb-silva.de/fileadmin/silva_databases/release_138_1/Exports/"
+    "SILVA_138.1_SSURef_NR99_tax_silva_full_align_trunc.fasta.gz"
 )
-SILVA_FILENAME = "SILVA_138.1_SSURef_NR99_tax_silva.fasta.gz"
+SILVA_FILENAME = "SILVA_138.1_SSURef_NR99_tax_silva_full_align_trunc.fasta.gz"
 
 # Canonical SILVA taxonomy depth; entries with fewer levels get empty strings.
 TAXONOMY_LEVELS = ["domain", "phylum", "class", "order", "family", "genus", "species"]
 
+
+# ── BLAST binary discovery ────────────────────────────────────────────────────
+
+def find_blast(name: str) -> str:
+    """
+    Locate a BLAST+ binary (e.g. 'blastn', 'makeblastdb') without requiring
+    the user to manually update PATH.
+
+    Search order:
+      1. Anything already on the current PATH  (shutil.which)
+      2. /tmp/ncbi-blast-*/bin/  (manual NCBI tarballs, newest version first)
+      3. /usr/local/bin, /opt/homebrew/bin, /opt/local/bin  (package managers)
+    """
+    import shutil as _shutil
+    found = _shutil.which(name)
+    if found:
+        return found
+
+    candidates: list[str] = sorted(
+        glob.glob(f"/tmp/ncbi-blast-*/bin/{name}"), reverse=True
+    )
+    for p in candidates + [
+        f"/usr/local/bin/{name}",
+        f"/opt/homebrew/bin/{name}",
+        f"/opt/local/bin/{name}",
+    ]:
+        if Path(p).exists():
+            return p
+
+    raise RuntimeError(
+        f"{name} not found. Install BLAST+:\n"
+        "  conda install -c bioconda blast\n"
+        "  brew install blast\n"
+        "  # or download: https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/"
+    )
+
+
+# ── Taxonomy helpers ──────────────────────────────────────────────────────────
 
 def parse_taxonomy(taxonomy_str: str) -> dict[str, str]:
     """Parse a SILVA semicolon-delimited taxonomy string into level→name dict."""
@@ -25,12 +68,16 @@ def parse_taxonomy(taxonomy_str: str) -> dict[str, str]:
     return {level: (taxa[i] if i < len(taxa) else "") for i, level in enumerate(TAXONOMY_LEVELS)}
 
 
+# ── FASTA iteration ───────────────────────────────────────────────────────────
+
 def iter_silva(fasta_path: str | Path) -> Iterator[tuple[str, dict[str, str], str]]:
     """
     Yield (accession, taxonomy_dict, sequence) for every entry in a SILVA FASTA.
 
-    Handles gzipped (.gz) and plain FASTA files.
-    RNA U→T substitution is applied so all sequences are DNA.
+    Works with both the unaligned release and the full-alignment/truncated
+    release (SILVA_*_full_align_trunc.fasta.gz).  Gap characters ('.' terminal
+    gaps, '-' internal gaps) are stripped so the returned sequence is always
+    plain DNA.  U→T substitution is also applied.
 
     SILVA header format:
         >AB016480.1.1455 Bacteria;Firmicutes;Clostridia;...
@@ -40,16 +87,18 @@ def iter_silva(fasta_path: str | Path) -> Iterator[tuple[str, dict[str, str], st
 
     with opener(fasta_path, "rt") as fh:
         for record in SeqIO.parse(fh, "fasta"):
-            # record.description is the full header (id + rest); strip the id
             desc = record.description
             taxonomy_str = desc.split(" ", 1)[1] if " " in desc else ""
             taxonomy = parse_taxonomy(taxonomy_str)
-            seq = str(record.seq).upper().replace("U", "T")
-            yield record.id, taxonomy, seq
+            seq = str(record.seq).upper().replace("U", "T").replace(".", "").replace("-", "")
+            if seq:
+                yield record.id, taxonomy, seq
 
+
+# ── Download ──────────────────────────────────────────────────────────────────
 
 def download_silva(output_dir: str | Path = ".") -> Path:
-    """Download the SILVA 138.1 NR99 SSU FASTA (~1.5 GB compressed)."""
+    """Download the SILVA 138.1 NR99 full-alignment truncated FASTA (~3 GB compressed)."""
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     dest = output_dir / SILVA_FILENAME
@@ -58,8 +107,8 @@ def download_silva(output_dir: str | Path = ".") -> Path:
         print(f"SILVA already present: {dest}")
         return dest
 
-    print(f"Downloading SILVA 138.1 NR99 from:\n  {SILVA_URL}")
-    print("This download is ~1.5 GB and may take several minutes.")
+    print(f"Downloading SILVA 138.1 NR99 (full alignment) from:\n  {SILVA_URL}")
+    print("This download is ~3 GB and may take several minutes.")
 
     def _progress(count: int, block: int, total: int) -> None:
         mb_done = count * block / 1e6
@@ -71,31 +120,38 @@ def download_silva(output_dir: str | Path = ".") -> Path:
     return dest
 
 
-def decompress_silva(gz_path: str | Path, out_path: str | Path | None = None) -> Path:
-    """Decompress a gzipped SILVA FASTA; returns path to plain FASTA."""
-    gz_path = Path(gz_path)
-    if out_path is None:
-        out_path = gz_path.with_suffix("")  # strip .gz
-    out_path = Path(out_path)
+# ── BLAST database construction ───────────────────────────────────────────────
 
-    if out_path.exists():
-        return out_path
+def _write_degapped_fasta(src_path: Path, out_path: Path) -> None:
+    """
+    Stream a (possibly gzipped) SILVA FASTA and write a gap-stripped plain
+    FASTA suitable for makeblastdb.
 
-    print(f"Decompressing {gz_path.name} …")
-    with gzip.open(gz_path, "rb") as src, open(out_path, "wb") as dst:
-        shutil.copyfileobj(src, dst)
-    print(f"Decompressed to {out_path}")
-    return out_path
+    The aligned SILVA release contains '.' and '-' characters that would cause
+    makeblastdb to reject or mishandle sequences.  Gaps are removed here so the
+    BLAST database contains only biological sequence.
+    """
+    opener = gzip.open if src_path.suffix == ".gz" else open
+    written = 0
+    print(f"Writing gap-stripped FASTA to {out_path.name} …")
+    with opener(src_path, "rt") as src, open(out_path, "w") as dst:
+        for record in SeqIO.parse(src, "fasta"):
+            seq = str(record.seq).upper().replace("U", "T").replace(".", "").replace("-", "")
+            if seq:
+                dst.write(f">{record.description}\n{seq}\n")
+                written += 1
+    print(f"  Wrote {written:,} sequences")
 
 
 def build_blast_db(fasta_path: str | Path, db_dir: str | Path) -> Path:
     """
     Build a BLAST nucleotide database from a SILVA FASTA.
 
-    Decompresses the file if gzipped (makeblastdb needs a seekable file for
-    -parse_seqids). The uncompressed FASTA is kept in db_dir for reuse.
+    For the aligned release, gaps are stripped before indexing so that BLAST
+    operates on plain biological sequence.  The gap-stripped FASTA is kept in
+    db_dir as 'silva_nogap.fasta' for reuse on subsequent runs.
 
-    Returns the BLAST database path prefix (e.g. db_dir/silva).
+    Returns the BLAST database path prefix (db_dir/silva).
     """
     fasta_path = Path(fasta_path)
     db_dir = Path(db_dir)
@@ -106,29 +162,25 @@ def build_blast_db(fasta_path: str | Path, db_dir: str | Path) -> Path:
         print(f"BLAST database already exists at {db_prefix}")
         return db_prefix
 
-    # makeblastdb needs a plain (non-gzipped) seekable file when using -parse_seqids
-    if fasta_path.suffix == ".gz":
-        plain = db_dir / fasta_path.stem  # e.g. silva.fasta
-        fasta_path = decompress_silva(fasta_path, plain)
+    # Always write a fresh gap-stripped FASTA (handles both aligned and
+    # unaligned releases; stripping from an unaligned file is a no-op).
+    nogap = db_dir / "silva_nogap.fasta"
+    if not nogap.exists():
+        _write_degapped_fasta(fasta_path, nogap)
 
+    makeblastdb = find_blast("makeblastdb")
     print("Building BLAST database (this takes a few minutes) …")
-    try:
-        subprocess.run(
-            [
-                "makeblastdb",
-                "-in", str(fasta_path),
-                "-dbtype", "nucl",
-                "-out", str(db_prefix),
-                "-parse_seqids",
-                "-title", "SILVA_138.1_NR99",
-            ],
-            check=True,
-        )
-    except FileNotFoundError:
-        raise RuntimeError(
-            "makeblastdb not found. Install BLAST+:\n"
-            "  conda install -c bioconda blast"
-        )
+    subprocess.run(
+        [
+            makeblastdb,
+            "-in", str(nogap),
+            "-dbtype", "nucl",
+            "-out", str(db_prefix),
+            "-parse_seqids",
+            "-title", "SILVA_138.1_NR99",
+        ],
+        check=True,
+    )
     print(f"BLAST database built at {db_prefix}")
     return db_prefix
 

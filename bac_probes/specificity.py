@@ -6,7 +6,7 @@ import tempfile
 from collections import Counter, defaultdict
 from pathlib import Path
 
-from .database import parse_taxonomy
+from .database import find_blast, parse_taxonomy
 
 
 def _kmers_to_fasta(kmers: list[str]) -> str:
@@ -116,7 +116,7 @@ def run_blast(
     try:
         result = subprocess.run(
             [
-                "blastn",
+                find_blast("blastn"),
                 "-task", "blastn-short",
                 "-query", query_path,
                 "-db", str(blast_db),
@@ -132,10 +132,7 @@ def run_blast(
             text=True,
         )
     except FileNotFoundError:
-        raise RuntimeError(
-            "blastn not found. Install BLAST+:\n"
-            "  conda install -c bioconda blast"
-        ) from None
+        raise RuntimeError(find_blast("blastn")) from None  # surfaces helpful install message
     finally:
         Path(query_path).unlink(missing_ok=True)
 

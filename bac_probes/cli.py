@@ -5,6 +5,7 @@ from pathlib import Path
 
 import click
 import pandas as pd
+from Bio import SeqIO
 from tqdm import tqdm
 
 from .database import (
@@ -101,6 +102,12 @@ def list_taxa_cmd(silva_fasta: str, level: str, top: int) -> None:
     default="genus", show_default=True,
     help="Taxonomic level for the target name.",
 )
+@click.option(
+    "--target-fasta", default=None,
+    help="Plain FASTA of target sequences (e.g. downloaded from NCBI). "
+         "When provided, target sequences come from this file instead of SILVA; "
+         "SILVA is still used for background off-target scoring.",
+)
 @click.option("--kmer-size", "-k", default=32, show_default=True, help="K-mer length (bp).")
 @click.option(
     "--min-conservation", default=0.80, show_default=True,
@@ -137,6 +144,7 @@ def find(
     silva_fasta: str,
     target_name: str,
     level: str,
+    target_fasta: str | None,
     kmer_size: int,
     min_conservation: float,
     gc_min: float,
@@ -154,11 +162,12 @@ def find(
     \b
     SILVA_FASTA  Path to the SILVA NR99 FASTA (gzipped or plain).
     TARGET_NAME  Taxonomic name to target (e.g. 'Firmicutes', 'Streptococcus').
+                 Also used to label the target in BLAST output columns.
 
     \b
     Output columns:
-      kmer                       – k-mer sequence (same strand as SILVA reference)
-      probe                      – reverse complement (the actual probe/primer sequence)
+      kmer                       – k-mer sequence (same strand as reference)
+      probe                      – reverse complement (order this as the probe)
       gc_pct                     – GC content (%)
       conservation_pct           – % of target sequences containing this k-mer exactly
       target_seqs                – number of target sequences used
@@ -180,30 +189,48 @@ def find(
     blast_db_path = Path(blast_db) if blast_db else Path("silva_db/silva")
     target_lower = target_name.lower()
 
-    # ── Pass 1: collect target sequences, count background size ──────────────
-    click.echo(f"\nPass 1/2 — scanning SILVA for '{target_name}' at level '{level}' …")
-    target_seqs: list[str] = []
-    n_bg_pass1 = 0
-
-    for _acc, taxonomy, seq in tqdm(iter_silva(silva_path), desc="  reading", unit=" seq"):
-        if taxonomy.get(level, "").lower() == target_lower:
-            target_seqs.append(seq)
-        else:
-            n_bg_pass1 += 1
-
-    if not target_seqs:
-        click.echo(
-            f"\nERROR: No sequences found for '{target_name}' at level '{level}'.\n"
-            "  • Check spelling (run 'bac-probes list-taxa' to browse names).\n"
-            "  • Try a higher level (phylum → class → order → family → genus → species).",
-            err=True,
+    # ── Pass 1: collect target sequences ─────────────────────────────────────
+    if target_fasta:
+        # Load target sequences from a plain FASTA (e.g. NCBI download).
+        # SILVA is used only for background off-target scoring.
+        click.echo(f"\nLoading target sequences from {target_fasta} …")
+        target_seqs = [
+            str(r.seq).upper().replace("U", "T")
+            for r in SeqIO.parse(target_fasta, "fasta")
+        ]
+        if not target_seqs:
+            click.echo(f"ERROR: No sequences found in {target_fasta}.", err=True)
+            sys.exit(1)
+        click.echo(f"  Target sequences : {len(target_seqs):,}  (from {target_fasta})")
+        click.echo(f"\nCounting background sequences in SILVA …")
+        n_bg_pass1 = sum(
+            1 for _acc, taxonomy, _seq in tqdm(iter_silva(silva_path), desc="  reading", unit=" seq")
+            if taxonomy.get(level, "").lower() != target_lower
         )
-        sys.exit(1)
+        click.echo(f"  Background seqs  : {n_bg_pass1:,}")
+    else:
+        click.echo(f"\nPass 1/2 — scanning SILVA for '{target_name}' at level '{level}' …")
+        target_seqs: list[str] = []
+        n_bg_pass1 = 0
+        for _acc, taxonomy, seq in tqdm(iter_silva(silva_path), desc="  reading", unit=" seq"):
+            if taxonomy.get(level, "").lower() == target_lower:
+                target_seqs.append(seq)
+            else:
+                n_bg_pass1 += 1
 
-    click.echo(
-        f"  Target sequences : {len(target_seqs):,}\n"
-        f"  Background seqs  : {n_bg_pass1:,}"
-    )
+        if not target_seqs:
+            click.echo(
+                f"\nERROR: No sequences found for '{target_name}' at level '{level}'.\n"
+                "  • Check spelling (run 'bac-probes list-taxa' to browse names).\n"
+                "  • Try a higher level (phylum → class → order → family → genus → species).",
+                err=True,
+            )
+            sys.exit(1)
+
+        click.echo(
+            f"  Target sequences : {len(target_seqs):,}\n"
+            f"  Background seqs  : {n_bg_pass1:,}"
+        )
 
     # ── Conservation scoring ──────────────────────────────────────────────────
     click.echo(f"\nExtracting conserved {kmer_size}-mers (conservation ≥ {min_conservation:.0%}) …")
