@@ -15,7 +15,7 @@ from .database import (
     iter_silva,
     list_taxa,
 )
-from .kmers import gc_content, reverse_complement, score_conservation, score_offtarget_exact
+from .kmers import gc_content, merge_overlapping_kmers, rescore_merged_conservation, reverse_complement, score_conservation, score_offtarget_exact
 from .specificity import parse_blast_results, run_blast
 
 
@@ -135,6 +135,14 @@ def list_taxa_cmd(silva_fasta: str, level: str, top: int) -> None:
     "--top-n-blast", default=500, show_default=True,
     help="Submit at most this many top candidates to BLAST (ranked by conservation).",
 )
+@click.option(
+    "--blast-max-target-seqs", default=1000, show_default=True,
+    help="BLAST max_target_seqs — increase for large target taxa where cap inflates specificity.",
+)
+@click.option(
+    "--merge-overlapping/--no-merge-overlapping", default=False, show_default=True,
+    help="Merge overlapping k-mers into longer contiguous probe sequences.",
+)
 @click.option("--threads", default=4, show_default=True, help="CPU threads for BLAST.")
 @click.option(
     "--output", "-o", default="probes.tsv", show_default=True,
@@ -154,6 +162,8 @@ def find(
     blast_db: str | None,
     blast_identity: float,
     top_n_blast: int,
+    blast_max_target_seqs: int,
+    merge_overlapping: bool,
     threads: int,
     output: str,
 ) -> None:
@@ -254,6 +264,24 @@ def find(
 
     click.echo(f"  Candidates after conservation filter: {len(conservation):,}")
 
+    # ── Merge overlapping k-mers into longer probes ───────────────────────────
+    if merge_overlapping:
+        click.echo(f"\nMerging overlapping {kmer_size}-mers …")
+        merged_seqs = merge_overlapping_kmers(set(conservation.keys()), kmer_size)
+        conservation = rescore_merged_conservation(
+            target_seqs, merged_seqs, min_conservation,
+            gc_range=(gc_min, gc_max), max_homopolymer=max_homopolymer,
+        )
+        click.echo(f"  {len(merged_seqs)} merged sequences → {len(conservation):,} passed conservation filter")
+        if not conservation:
+            click.echo(
+                "\nNo merged sequences passed the conservation threshold.\n"
+                "  • Lower --min-conservation (merged probes are longer and harder to conserve).\n"
+                "  • Try --no-merge-overlapping to see unmerged candidates.",
+                err=True,
+            )
+            sys.exit(1)
+
     # ── Pass 2: exact off-target scoring (streaming background) ──────────────
     click.echo("\nPass 2/2 — exact off-target scoring across background sequences …")
 
@@ -309,7 +337,7 @@ def find(
             click.echo(f"\nBLASTing top {n_blast} candidates (identity ≥ {blast_identity:.0f}%) …")
             top_kmers: list[str] = df.head(n_blast)["kmer"].tolist()
 
-            max_tseqs = 1000
+            max_tseqs = blast_max_target_seqs
             blast_out = run_blast(
                 top_kmers,
                 blast_db_path,
