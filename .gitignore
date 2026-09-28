@@ -5,3 +5,4 @@ __pycache__/
 *.py[cod]
 *.tsv
 .DS_Store
+.venv/

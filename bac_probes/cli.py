@@ -30,6 +30,11 @@ def cli() -> None:
       2. bac-probes build-db ./silva_db/SILVA_*.fasta.gz --db-dir ./silva_db
       3. bac-probes find  ./silva_db/SILVA_*.fasta.gz  Streptococcus  --level genus
     """
+    # Output uses non-ASCII characters (≥, …, —). On Windows, piped/redirected
+    # output defaults to a legacy code page that can't encode them.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure") and (stream.encoding or "").lower() != "utf-8":
+            stream.reconfigure(encoding="utf-8")
 
 
 # ─── download ──────────────────────────────────────────────────────────────────

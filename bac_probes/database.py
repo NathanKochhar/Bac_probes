@@ -98,7 +98,7 @@ def iter_silva(fasta_path: str | Path) -> Iterator[tuple[str, dict[str, str], st
 # ── Download ──────────────────────────────────────────────────────────────────
 
 def download_silva(output_dir: str | Path = ".") -> Path:
-    """Download the SILVA 138.1 NR99 full-alignment truncated FASTA (~3 GB compressed)."""
+    """Download the SILVA 138.1 NR99 full-alignment truncated FASTA (~1 GB compressed)."""
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     dest = output_dir / SILVA_FILENAME
@@ -108,7 +108,7 @@ def download_silva(output_dir: str | Path = ".") -> Path:
         return dest
 
     print(f"Downloading SILVA 138.1 NR99 (full alignment) from:\n  {SILVA_URL}")
-    print("This download is ~3 GB and may take several minutes.")
+    print("This download is ~1 GB and may take several minutes.")
 
     def _progress(count: int, block: int, total: int) -> None:
         mb_done = count * block / 1e6

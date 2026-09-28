@@ -35,19 +35,23 @@ def mismatch_weight(pos: int, k: int) -> float:
     return math.sin(math.pi * (pos + 0.5) / k) ** 2
 
 
-def _parse_btop(btop: str) -> list[int]:
+def _parse_btop(btop: str, qstart: int = 1) -> list[int]:
     """
     Parse a BLAST BTOP string into 0-indexed query positions of every mismatch
-    or query-consuming gap in the alignment.
+    or gap in the alignment.
+
+    BTOP positions are relative to the start of the alignment, so `qstart`
+    (BLAST's 1-based query start) is used to map them back onto the probe.
 
     BTOP format:
         <int>   – N consecutive matches (advance both query and subject)
         XY      – mismatch: query has X, subject has Y (advance both by 1)
-        -Y      – gap in query / insertion in subject (subject advances, query does not)
+        -Y      – gap in query / insertion in subject (subject advances, query does
+                  not); recorded at the query base following the insertion
         X-      – gap in subject / deletion in subject (query advances by 1)
     """
     positions: list[int] = []
-    query_pos = 0
+    query_pos = qstart - 1
     i = 0
     while i < len(btop):
         c = btop[i]
@@ -59,6 +63,8 @@ def _parse_btop(btop: str) -> list[int]:
             i = j
         elif c == "-":
             # Gap in query: subject has an extra base, query position doesn't advance.
+            # The bulge still destabilises the duplex, so penalise it at this position.
+            positions.append(query_pos)
             i += 2
         else:
             # Mismatch (XY) or gap in subject (X-): query advances by 1.
@@ -66,6 +72,16 @@ def _parse_btop(btop: str) -> list[int]:
             query_pos += 1
             i += 2
     return positions
+
+
+def _hit_mismatch_positions(btop: str, qstart: int, qend: int, qlen: int) -> list[int]:
+    """
+    0-indexed probe positions that do not pair with the subject in a BLAST hit:
+    mismatches and gaps inside the alignment, plus any probe bases BLAST left
+    unaligned at either end (positions before qstart or after qend).
+    """
+    overhang = list(range(qstart - 1)) + list(range(qend, qlen))
+    return overhang + _parse_btop(btop, qstart)
 
 
 def effective_binding_score(mismatch_positions: list[int], k: int) -> float:
@@ -105,7 +121,8 @@ def run_blast(
     requested so that mismatch positions can be extracted for position-weighted
     off-target scoring.
 
-    Returns raw tabular output (format 6: qseqid stitle pident length qlen btop).
+    Returns raw tabular output
+    (format 6: qseqid stitle pident length qlen btop qstart qend).
     """
     query_fasta = _kmers_to_fasta(kmers)
 
@@ -120,7 +137,7 @@ def run_blast(
                 "-task", "blastn-short",
                 "-query", query_path,
                 "-db", str(blast_db),
-                "-outfmt", "6 qseqid stitle pident length qlen btop",
+                "-outfmt", "6 qseqid stitle pident length qlen btop qstart qend",
                 "-perc_identity", str(perc_identity),
                 "-qcov_hsp_perc", "80",
                 "-dust", "no",
@@ -199,8 +216,12 @@ def parse_blast_results(
         if hit_taxon.lower() == target_name_lower:
             data[kmer]["target"] += 1
         else:
-            mismatch_pos = _parse_btop(btop)
-            specificity = effective_binding_score(mismatch_pos, len(kmer))
+            k = len(kmer)
+            if len(parts) >= 8:
+                mismatch_pos = _hit_mismatch_positions(btop, int(parts[6]), int(parts[7]), k)
+            else:
+                mismatch_pos = _parse_btop(btop)
+            specificity = effective_binding_score(mismatch_pos, k)
             data[kmer]["offtarget_raw"] += 1
             data[kmer]["offtarget_weighted"] += (1.0 - specificity)  # binding concern = 1 - specificity
             if hit_taxon:

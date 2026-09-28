@@ -4,6 +4,7 @@ import pytest
 from bac_probes.specificity import (
     mismatch_weight,
     _parse_btop,
+    _hit_mismatch_positions,
     effective_binding_score,
     parse_blast_results,
 )
@@ -51,9 +52,24 @@ def test_btop_two_mismatches():
     assert result == [5, 16]
 
 def test_btop_gap_in_query():
-    # "-G" = gap in query: subject advances, query does not
+    # "-G" = gap in query: subject advances, query does not. The bulge is
+    # still penalised, at the query base following the insertion.
     result = _parse_btop("10-G10")
-    assert result == []  # no query position consumed by gap
+    assert result == [10]
+
+def test_btop_qstart_offset():
+    # Alignment starting at query base 3 (1-based) shifts positions by 2
+    assert _parse_btop("4TC11AT12", qstart=3) == [6, 18]
+
+
+# ── _hit_mismatch_positions ───────────────────────────────────────────────────
+
+def test_hit_positions_full_alignment():
+    assert _hit_mismatch_positions("15GA16", qstart=1, qend=32, qlen=32) == [15]
+
+def test_hit_positions_include_unaligned_overhangs():
+    # Probe bases 0-1 and 31 were not aligned; mismatches offset by qstart
+    assert _hit_mismatch_positions("4TC11AT12", qstart=3, qend=31, qlen=32) == [0, 1, 31, 6, 18]
 
 def test_btop_gap_in_subject():
     # "A-" = gap in subject: query advances by 1
@@ -164,6 +180,18 @@ def test_parse_off_target_end_mismatch_preserved():
 
     r = results[K]
     assert r["blast_weighted_offtarget"] == pytest.approx(0.998, abs=0.01)
+
+
+def test_parse_uses_qstart_to_locate_mismatch():
+    # BTOP "15GA13" starting at query base 4 puts the mismatch at probe pos 18,
+    # not 15; bases 0-2 are unaligned. Without the offset this would score as
+    # a near-central mismatch.
+    stitle = "Bacteria;Firmicutes;Bacilli;Lactobacillales;Lactobacillaceae;Lactobacillus;uncultured bacterium"
+    line = _make_blast_line("kmer_0", stitle, 96.4, "15GA13", length=29) + "\t4\t32"
+    results = parse_blast_results(line, [K], "Bacteroides", "genus")
+
+    expected = min(1.0, sum(mismatch_weight(p, 32) for p in [0, 1, 2, 18]))
+    assert results[K]["blast_weighted_offtarget"] == pytest.approx(1 - expected, abs=1e-3)
 
 
 def test_parse_taxonomy_species_with_spaces():
