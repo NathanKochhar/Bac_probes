@@ -1,6 +1,7 @@
 """Command-line interface for bac-probes."""
 
 import sys
+from collections import Counter
 from pathlib import Path
 
 import click
@@ -15,7 +16,7 @@ from .database import (
     iter_silva,
     list_taxa,
 )
-from .kmers import gc_content, merge_overlapping_kmers, rescore_merged_conservation, reverse_complement, score_conservation, score_offtarget_exact
+from .kmers import gc_content, greedy_cocktail, merge_overlapping_kmers, rescore_merged_conservation, reverse_complement, score_conservation, score_conservation_with_coverage, score_offtarget_exact
 from .specificity import parse_blast_results, run_blast
 
 
@@ -551,3 +552,537 @@ def coverage(
     if output:
         df_out.to_csv(output, sep="\t", index=False)
         click.echo(f"\nCoverage table written to {output}")
+
+
+# ─── cocktail ──────────────────────────────────────────────────────────────────
+
+@cli.command()
+@click.argument("silva_fasta")
+@click.argument("target_name")
+@click.option(
+    "--level", "-l",
+    type=click.Choice(TAXONOMY_LEVELS, case_sensitive=False),
+    default="genus", show_default=True,
+    help="Taxonomic level for TARGET_NAME.",
+)
+@click.option(
+    "--n-probes", default=8, show_default=True,
+    help="Maximum number of probes in the cocktail.",
+)
+@click.option(
+    "--coverage-target", default=0.90, show_default=True,
+    help="Stop adding probes once this fraction of target sequences is covered.",
+)
+@click.option(
+    "--min-conservation", default=0.20, show_default=True,
+    help="Minimum fraction of target sequences a k-mer must appear in to be a candidate.",
+)
+@click.option(
+    "--min-specificity", default=0.99, show_default=True,
+    help="Minimum exact_specificity a candidate probe must have to be considered.",
+)
+@click.option("--gc-min", default=0.35, show_default=True, help="Minimum GC fraction.")
+@click.option("--gc-max", default=0.65, show_default=True, help="Maximum GC fraction.")
+@click.option("--max-homopolymer", default=5, show_default=True, help="Reject k-mers with homopolymer runs >= this length.")
+@click.option("-k", "--kmer-size", default=32, show_default=True, help="K-mer length (bp).")
+@click.option("--blast/--no-blast", "use_blast", default=True, show_default=True, help="Run BLAST on probes.")
+@click.option(
+    "--blast-select/--no-blast-select", default=True, show_default=True,
+    help="BLAST top candidates before selection and use blast_weighted_specificity for greedy ranking. "
+         "Requires --blast. When off, greedy uses exact_specificity and BLAST only scores the final selection.",
+)
+@click.option(
+    "--top-n-blast", default=500, show_default=True,
+    help="Number of top candidates (by exact specificity) to pre-BLAST when --blast-select is on.",
+)
+@click.option("--blast-db", default=None, help="BLAST database prefix (created by build-db).")
+@click.option("--blast-identity", default=85.0, show_default=True, help="Minimum BLAST percent identity.")
+@click.option("--blast-max-target-seqs", default=10000, show_default=True, help="BLAST max_target_seqs.")
+@click.option("--threads", default=4, show_default=True, help="CPU threads for BLAST.")
+@click.option("--output", "-o", default="cocktail.tsv", show_default=True, help="Output TSV path.")
+def cocktail(
+    silva_fasta: str,
+    target_name: str,
+    level: str,
+    n_probes: int,
+    coverage_target: float,
+    min_conservation: float,
+    min_specificity: float,
+    gc_min: float,
+    gc_max: float,
+    max_homopolymer: int,
+    kmer_size: int,
+    use_blast: bool,
+    blast_select: bool,
+    top_n_blast: int,
+    blast_db: str | None,
+    blast_identity: float,
+    blast_max_target_seqs: int,
+    threads: int,
+    output: str,
+) -> None:
+    """Design a probe cocktail covering TARGET_NAME using greedy set cover.
+
+    Finds up to N_PROBES k-mers that together cover >= COVERAGE_TARGET of the
+    target taxon's sequences. With --blast-select (default), BLASTs the top
+    candidates first and ranks by blast_weighted_specificity so near-miss
+    off-targets are penalised during probe selection.
+    """
+    silva_path = Path(silva_fasta)
+    target_lower = target_name.lower()
+    blast_db_path = Path(blast_db) if blast_db else silva_path.parent / "silva"
+
+    # ── Pass 1: collect target sequences ────────────────────────────────────
+    click.echo(f"\nPass 1/2 — scanning SILVA for '{target_name}' at level '{level}' …")
+    target_seqs: list[str] = []
+    n_bg_pass1 = 0
+    for _acc, taxonomy, seq in tqdm(iter_silva(silva_path), desc="  reading", unit=" seq"):
+        if taxonomy.get(level, "").lower() == target_lower:
+            target_seqs.append(seq)
+        else:
+            n_bg_pass1 += 1
+
+    if not target_seqs:
+        click.echo(
+            f"\nERROR: No sequences found for '{target_name}' at level '{level}'.\n"
+            "  • Check spelling (run 'bac-probes list-taxa' to browse names).",
+            err=True,
+        )
+        sys.exit(1)
+
+    click.echo(f"  Target sequences : {len(target_seqs):,}\n  Background seqs  : {n_bg_pass1:,}")
+
+    # ── Conservation scoring with per-sequence coverage ──────────────────────
+    click.echo(f"\nScoring {kmer_size}-mers (conservation ≥ {min_conservation:.0%}) …")
+    coverage_sets, n_target = score_conservation_with_coverage(
+        target_seqs, k=kmer_size, min_conservation=min_conservation,
+        gc_range=(gc_min, gc_max), max_homopolymer=max_homopolymer,
+    )
+
+    if not coverage_sets:
+        click.echo("\nNo k-mers passed the conservation threshold.", err=True)
+        sys.exit(1)
+
+    click.echo(f"  Candidates: {len(coverage_sets):,}")
+
+    # ── Pass 2: exact off-target scoring (streaming) ─────────────────────────
+    click.echo("\nPass 2/2 — exact off-target scoring …")
+
+    def _bg_stream():
+        for _acc, taxonomy, seq in iter_silva(silva_path):
+            if taxonomy.get(level, "").lower() != target_lower:
+                yield seq
+
+    offtarget_counts, n_bg = score_offtarget_exact(
+        set(coverage_sets.keys()),
+        tqdm(_bg_stream(), desc="  scanning", total=n_bg_pass1, unit=" seq"),
+        k=kmer_size,
+    )
+
+    exact_spec = {
+        kmer: round(1.0 - offtarget_counts.get(kmer, 0) / n_bg, 6)
+        for kmer in coverage_sets
+    }
+
+    n_pass = sum(1 for s in exact_spec.values() if s >= min_specificity)
+    click.echo(f"  Candidates passing exact specificity ≥ {min_specificity}: {n_pass:,}")
+
+    # ── Optional: BLAST top candidates before selection ──────────────────────
+    blast_scores_all: dict = {}
+    selection_spec = exact_spec  # default: use exact specificity for greedy
+    db_exists = False
+
+    if use_blast:
+        db_exists = (
+            blast_db_path.with_suffix(".nhr").exists()
+            or (blast_db_path.parent / (blast_db_path.name + ".00.nhr")).exists()
+        )
+        if not db_exists:
+            click.echo(
+                f"\nWARNING: BLAST database not found at '{blast_db_path}'. Skipping BLAST.",
+                err=True,
+            )
+
+    if use_blast and blast_select and db_exists:
+        # Sort by exact specificity, take top N to BLAST
+        top_candidates = sorted(
+            [k for k in coverage_sets if exact_spec.get(k, 0) >= min_specificity],
+            key=lambda k: (exact_spec[k], len(coverage_sets[k])),
+            reverse=True,
+        )[:top_n_blast]
+        click.echo(f"\nPre-BLASTing top {len(top_candidates)} candidates for weighted specificity …")
+        blast_out = run_blast(
+            top_candidates, blast_db_path, threads=threads,
+            perc_identity=blast_identity, max_target_seqs=blast_max_target_seqs,
+        )
+        blast_scores_all = parse_blast_results(
+            blast_out, top_candidates, target_name, level,
+            max_target_seqs=blast_max_target_seqs,
+        )
+        # Use blast_weighted_specificity for greedy; fall back to exact if missing
+        selection_spec = {
+            k: blast_scores_all[k].get("blast_weighted_specificity", exact_spec[k])
+            if k in blast_scores_all else exact_spec[k]
+            for k in top_candidates
+        }
+        # Restrict coverage_sets to only BLASTed candidates
+        coverage_sets_sel = {k: coverage_sets[k] for k in top_candidates}
+        n_blast_pass = sum(1 for s in selection_spec.values() if s >= min_specificity)
+        click.echo(f"  Candidates passing blast_weighted_specificity ≥ {min_specificity}: {n_blast_pass:,}")
+    else:
+        coverage_sets_sel = coverage_sets
+
+    # ── Greedy set cover ─────────────────────────────────────────────────────
+    click.echo(f"\nRunning greedy set cover (target ≥ {coverage_target:.0%}, max {n_probes} probes) …")
+    selected = greedy_cocktail(
+        coverage_sets_sel, selection_spec, n_target,
+        n_probes=n_probes, coverage_target=coverage_target,
+        min_specificity=min_specificity,
+    )
+
+    if not selected:
+        click.echo(
+            "\nNo probes selected — no candidates met the specificity threshold.\n"
+            "  • Lower --min-specificity.\n"
+            "  • Lower --min-conservation to widen the candidate pool.\n"
+            "  • Increase --top-n-blast to BLAST more candidates.",
+            err=True,
+        )
+        sys.exit(1)
+
+    # ── BLAST selected probes (if not already BLASTed during selection) ──────
+    if use_blast and db_exists and not blast_select:
+        click.echo(f"\nBLASTing {len(selected)} selected probes …")
+        blast_out = run_blast(
+            selected, blast_db_path, threads=threads,
+            perc_identity=blast_identity, max_target_seqs=blast_max_target_seqs,
+        )
+        blast_scores_all = parse_blast_results(
+            blast_out, selected, target_name, level,
+            max_target_seqs=blast_max_target_seqs,
+        )
+
+    # ── Build results table ──────────────────────────────────────────────────
+    cumulative: set[int] = set()
+    rows = []
+    for rank, kmer in enumerate(selected, 1):
+        newly = coverage_sets[kmer] - cumulative
+        cumulative |= coverage_sets[kmer]
+        rows.append({
+            "probe_rank":              rank,
+            "kmer":                    kmer,
+            "probe":                   reverse_complement(kmer),
+            "gc_pct":                  round(gc_content(kmer) * 100, 1),
+            "conservation_pct":        round(100 * len(coverage_sets[kmer]) / n_target, 2),
+            "seqs_covered":            len(coverage_sets[kmer]),
+            "new_seqs_covered":        len(newly),
+            "cumulative_seqs":         len(cumulative),
+            "cumulative_coverage_pct": round(100 * len(cumulative) / n_target, 2),
+            "exact_offtarget":         offtarget_counts.get(kmer, 0),
+            "exact_bg_seqs":           n_bg,
+            "exact_specificity":       exact_spec[kmer],
+        })
+
+    df = pd.DataFrame(rows)
+    final_coverage = round(100 * len(cumulative) / n_target, 1)
+    click.echo(f"  Selected {len(selected)} probe(s) covering {final_coverage}% of {n_target:,} target sequences")
+
+    if blast_scores_all:
+        for col, key in [
+            ("blast_total_hits",           "blast_total_hits"),
+            ("blast_target_hits",          "blast_target_hits"),
+            ("blast_offtarget_hits",       "blast_offtarget_hits"),
+            ("blast_weighted_offtarget",   "offtarget_weighted"),
+            ("blast_specificity",          "blast_specificity"),
+            ("blast_weighted_specificity", "blast_weighted_specificity"),
+            ("blast_capped",               "blast_capped"),
+            ("blast_top_offtarget",        "blast_top_offtarget"),
+        ]:
+            df[col] = df["kmer"].map(lambda k, key=key: blast_scores_all.get(k, {}).get(key))
+
+    # ── Output ───────────────────────────────────────────────────────────────
+    click.echo(f"\n{'─'*70}")
+    click.echo(f"Cocktail for {target_name}  ({len(selected)} probes, {final_coverage}% coverage)")
+    click.echo(f"{'─'*70}")
+    display_cols = ["probe_rank", "probe", "gc_pct", "conservation_pct",
+                    "new_seqs_covered", "cumulative_coverage_pct", "exact_specificity"]
+    if "blast_weighted_specificity" in df.columns:
+        display_cols.append("blast_weighted_specificity")
+    click.echo(df[display_cols].to_string(index=False))
+
+    df.to_csv(output, sep="\t", index=False)
+    click.echo(f"\nCocktail written to {output}")
+
+
+# ─── validate ──────────────────────────────────────────────────────────────────
+
+@cli.command()
+@click.argument("silva_fasta")
+@click.argument("input_csv")
+@click.option(
+    "--top-offtargets", default=5, show_default=True,
+    help="Number of top off-target organism names to report per probe.",
+)
+@click.option(
+    "--no-header", "no_header", is_flag=True, default=False,
+    help="CSV has no header row; columns are assumed to be taxa, level, sequences.",
+)
+@click.option(
+    "--blast/--no-blast", "use_blast", default=False, show_default=True,
+    help="Run BLAST to score near-match off-target binding (requires build-db first).",
+)
+@click.option(
+    "--blast-db", default=None,
+    help="BLAST database prefix (default: silva_db/silva).",
+)
+@click.option(
+    "--blast-identity", default=85.0, show_default=True,
+    help="Minimum BLAST percent identity to count as an off-target hit.",
+)
+@click.option(
+    "--blast-max-target-seqs", default=10000, show_default=True,
+    help="BLAST max_target_seqs cap.",
+)
+@click.option(
+    "--threads", default=4, show_default=True,
+    help="CPU threads for BLAST.",
+)
+@click.option(
+    "--output", "-o", default=None,
+    help="Write results to this TSV path (default: print to stdout only).",
+)
+def validate(
+    silva_fasta: str,
+    input_csv: str,
+    top_offtargets: int,
+    no_header: bool,
+    use_blast: bool,
+    blast_db: str | None,
+    blast_identity: float,
+    blast_max_target_seqs: int,
+    threads: int,
+    output: str | None,
+) -> None:
+    """Validate probe sequences against SILVA: report coverage and off-target specificity.
+
+    \b
+    INPUT_CSV  CSV with columns: taxa, level, sequences
+               One probe per row. 'sequences' is the probe sequence (either strand —
+               both orientations are checked against SILVA).
+
+    \b
+    Output columns (exact scoring, always):
+      taxa                – as supplied
+      level               – as supplied
+      sequence            – probe sequence as supplied
+      probe_len           – length in bp
+      target_seqs         – SILVA sequences belonging to this taxon
+      coverage_count      – target seqs containing the probe (either strand)
+      coverage_pct        – coverage_count / target_seqs × 100
+      exact_offtarget     – background seqs with an exact hit
+      exact_bg_seqs       – total background seqs scanned
+      exact_specificity   – 1 − (exact_offtarget / exact_bg_seqs)
+      top_offtargets      – most frequent off-target organism names (exact hits)
+
+    \b
+    Additional columns with --blast:
+      blast_total_hits           – total BLAST hits
+      blast_target_hits          – BLAST hits within the target taxon
+      blast_offtarget_hits       – raw off-target BLAST hit count
+      blast_weighted_offtarget   – off-target hits weighted by binding concern
+      blast_specificity          – blast_target_hits / blast_total_hits
+      blast_weighted_specificity – blast_target_hits / (blast_target_hits + blast_weighted_offtarget)
+      blast_top_offtarget        – most frequent off-target taxon in BLAST results
+      blast_capped               – True if BLAST hit the max_target_seqs limit
+    """
+    silva_path = Path(silva_fasta)
+
+    # ── Read and validate input CSV ───────────────────────────────────────────
+    df_in = (
+        pd.read_csv(input_csv, header=None, names=["taxa", "level", "sequences"])
+        if no_header
+        else pd.read_csv(input_csv)
+    )
+    required = {"taxa", "level", "sequences"}
+    missing = required - set(df_in.columns)
+    if missing:
+        click.echo(f"ERROR: CSV is missing column(s): {', '.join(sorted(missing))}", err=True)
+        sys.exit(1)
+
+    df_in["sequences"] = df_in["sequences"].str.strip().str.upper()
+    bad_level = ~df_in["level"].isin(TAXONOMY_LEVELS)
+    if bad_level.any():
+        bad = df_in.loc[bad_level, "level"].unique().tolist()
+        click.echo(
+            f"ERROR: unknown level(s): {bad}\n"
+            f"  Valid levels: {', '.join(TAXONOMY_LEVELS)}",
+            err=True,
+        )
+        sys.exit(1)
+
+    # ── Build per-group data structures for a single SILVA pass ──────────────
+    # Each entry: probes, RCs, counters indexed parallel to df_in rows.
+    # key = (taxa_lower, level) → group state dict
+    groups: dict[tuple[str, str], dict] = {}
+    group_order: list[tuple[str, str]] = []  # preserves input order
+
+    for _, row in df_in.iterrows():
+        key = (row["taxa"].lower(), row["level"])
+        if key not in groups:
+            groups[key] = {
+                "taxa":              row["taxa"],
+                "level":             row["level"],
+                "probes":            [],
+                "probes_rc":         [],
+                "orig_seqs":         [],
+                "target_hit":        [],
+                "bg_hit":            [],
+                "bg_offtarget_taxa": [],
+                "target_total":      0,
+                "bg_total":          0,
+            }
+            group_order.append(key)
+        g = groups[key]
+        seq_up = row["sequences"]
+        g["probes"].append(seq_up)
+        g["probes_rc"].append(reverse_complement(seq_up))
+        g["orig_seqs"].append(seq_up)
+        g["target_hit"].append(0)
+        g["bg_hit"].append(0)
+        g["bg_offtarget_taxa"].append(Counter())
+
+    n_groups = len(groups)
+    n_probes_total = len(df_in)
+    click.echo(
+        f"\nValidating {n_probes_total} probe(s) across {n_groups} taxon group(s) "
+        f"in a single SILVA pass …"
+    )
+
+    # ── Single pass through SILVA ─────────────────────────────────────────────
+    for _acc, taxonomy, seq in tqdm(iter_silva(silva_path), desc="  scanning", unit=" seq"):
+        # Pre-compute the finest available taxon name for off-target labelling
+        offtarget_name = ""
+        for lv in reversed(TAXONOMY_LEVELS):
+            name = taxonomy.get(lv, "")
+            if name:
+                offtarget_name = name
+                break
+
+        for key, g in groups.items():
+            taxa_lower, level = key
+            is_target = taxonomy.get(level, "").lower() == taxa_lower
+            if is_target:
+                g["target_total"] += 1
+                for i, (p, prc) in enumerate(zip(g["probes"], g["probes_rc"])):
+                    if p in seq or prc in seq:
+                        g["target_hit"][i] += 1
+            else:
+                g["bg_total"] += 1
+                for i, (p, prc) in enumerate(zip(g["probes"], g["probes_rc"])):
+                    if p in seq or prc in seq:
+                        g["bg_hit"][i] += 1
+                        if offtarget_name:
+                            g["bg_offtarget_taxa"][i][offtarget_name] += 1
+
+    # ── Build output rows (in input order) ───────────────────────────────────
+    rows_out: list[dict] = []
+    for key in group_order:
+        g = groups[key]
+        taxa, level = g["taxa"], g["level"]
+        bg_total = g["bg_total"]
+        target_total = g["target_total"]
+
+        if target_total == 0:
+            click.echo(
+                f"\nWARNING: no SILVA sequences found for '{taxa}' at level '{level}'.\n"
+                "  Check spelling (run 'bac-probes list-taxa').",
+                err=True,
+            )
+
+        for i, orig_seq in enumerate(g["orig_seqs"]):
+            ot = g["bg_hit"][i]
+            exact_spec = round(1.0 - ot / bg_total, 6) if bg_total > 0 else 1.0
+            cov_pct = round(100 * g["target_hit"][i] / target_total, 2) if target_total > 0 else 0.0
+            top_ot = ", ".join(
+                f"{name} ({cnt})"
+                for name, cnt in g["bg_offtarget_taxa"][i].most_common(top_offtargets)
+            )
+            rows_out.append({
+                "taxa":              taxa,
+                "level":             level,
+                "sequence":          orig_seq,
+                "probe_len":         len(orig_seq),
+                "target_seqs":       target_total,
+                "coverage_count":    g["target_hit"][i],
+                "coverage_pct":      cov_pct,
+                "exact_offtarget":   ot,
+                "exact_bg_seqs":     bg_total,
+                "exact_specificity": exact_spec,
+                "top_offtargets":    top_ot,
+            })
+
+    if not rows_out:
+        click.echo("No results to report.", err=True)
+        sys.exit(1)
+
+    df_out = pd.DataFrame(rows_out)
+
+    # ── Optional BLAST scoring (per taxon group) ──────────────────────────────
+    if use_blast:
+        blast_db_path = Path(blast_db) if blast_db else Path("silva_db/silva")
+        db_exists = (
+            blast_db_path.with_suffix(".nhr").exists()
+            or (blast_db_path.parent / (blast_db_path.name + ".00.nhr")).exists()
+        )
+        if not db_exists:
+            click.echo(
+                f"\nWARNING: BLAST database not found at '{blast_db_path}'. Skipping BLAST.\n"
+                "  Run 'bac-probes build-db' first or pass --blast-db.",
+                err=True,
+            )
+        else:
+            all_blast: dict[str, dict] = {}  # seq → blast score dict
+            for key in group_order:
+                g = groups[key]
+                taxa, level = g["taxa"], g["level"]
+                probes = g["orig_seqs"]
+                click.echo(f"\nBLASTing {len(probes)} probe(s) for '{taxa}' …")
+                blast_out = run_blast(
+                    probes, blast_db_path, threads=threads,
+                    perc_identity=blast_identity, max_target_seqs=blast_max_target_seqs,
+                )
+                blast_scores = parse_blast_results(
+                    blast_out, probes, taxa, level,
+                    max_target_seqs=blast_max_target_seqs,
+                )
+                all_blast.update(blast_scores)
+
+            for col, key in [
+                ("blast_total_hits",           "blast_total_hits"),
+                ("blast_target_hits",          "blast_target_hits"),
+                ("blast_offtarget_hits",       "blast_offtarget_hits"),
+                ("blast_weighted_offtarget",   "blast_weighted_offtarget"),
+                ("blast_specificity",          "blast_specificity"),
+                ("blast_weighted_specificity", "blast_weighted_specificity"),
+                ("blast_top_offtarget",        "blast_top_offtarget"),
+                ("blast_capped",               "blast_capped"),
+            ]:
+                default = "" if col == "blast_top_offtarget" else pd.NA
+                df_out[col] = df_out["sequence"].map(
+                    lambda s, k=key, d=default: all_blast.get(s, {}).get(k, d)
+                )
+
+    # ── Display ───────────────────────────────────────────────────────────────
+    click.echo()
+    display_cols = [
+        "taxa", "level", "sequence", "probe_len",
+        "target_seqs", "coverage_count", "coverage_pct",
+        "exact_offtarget", "exact_specificity", "top_offtargets",
+    ]
+    if use_blast and "blast_weighted_specificity" in df_out.columns:
+        display_cols += ["blast_weighted_specificity", "blast_top_offtarget"]
+    click.echo(df_out[display_cols].to_string(index=False))
+
+    if output:
+        df_out.to_csv(output, sep="\t", index=False)
+        click.echo(f"\nResults written to {output}")

@@ -134,6 +134,68 @@ def score_offtarget_exact(
     return offtarget_counts, n_bg_seqs
 
 
+def score_conservation_with_coverage(
+    sequences: list[str],
+    k: int = 32,
+    min_conservation: float = 0.20,
+    gc_range: tuple[float, float] = (0.35, 0.65),
+    max_homopolymer: int = 5,
+) -> tuple[dict[str, set[int]], int]:
+    """
+    Like score_conservation but records which sequence indices contain each k-mer.
+
+    Returns:
+        coverage_sets: {kmer: set_of_seq_indices}
+        n_seqs: number of sequences processed
+    """
+    kmer_to_seqs: dict[str, set[int]] = {}
+    n_seqs = len(sequences)
+
+    for i, seq in enumerate(sequences):
+        for kmer in extract_kmers(seq, k, gc_range=gc_range, max_homopolymer=max_homopolymer):
+            kmer_to_seqs.setdefault(kmer, set()).add(i)
+
+    threshold = min_conservation * n_seqs
+    return {k: s for k, s in kmer_to_seqs.items() if len(s) >= threshold}, n_seqs
+
+
+def greedy_cocktail(
+    coverage_sets: dict[str, set[int]],
+    specificity: dict[str, float],
+    n_total: int,
+    n_probes: int = 8,
+    coverage_target: float = 0.90,
+    min_specificity: float = 0.0,
+) -> list[str]:
+    """
+    Greedy set-cover: select up to n_probes k-mers that collectively cover
+    >= coverage_target fraction of target sequences, ranked by
+    (newly covered seqs) × specificity at each step.
+
+    Returns ordered list of selected k-mers (best first).
+    """
+    candidates = {k: v for k, v in coverage_sets.items()
+                  if specificity.get(k, 0.0) >= min_specificity}
+    uncovered = set(range(n_total))
+    selected: list[str] = []
+
+    while len(selected) < n_probes and uncovered and candidates:
+        best = max(
+            candidates,
+            key=lambda k: len(candidates[k] & uncovered) * specificity.get(k, 0.0),
+        )
+        newly = candidates[best] & uncovered
+        if not newly:
+            break
+        selected.append(best)
+        uncovered -= newly
+        del candidates[best]
+        if (n_total - len(uncovered)) / n_total >= coverage_target:
+            break
+
+    return selected
+
+
 def merge_overlapping_kmers(kmer_set: set[str], k: int) -> list[str]:
     """
     Merge k-mers that overlap by exactly k-1 bases into longer contiguous sequences.

@@ -155,6 +155,57 @@ bac-probes coverage \
 
 Output columns: `subtaxon`, `total_seqs`, one column per k-mer (`k1_…`, `k2_…`), and `pool_coverage` (sequences hit by any k-mer).
 
+### 6. Validate existing probes
+
+`bac-probes validate` scores probe sequences you already have — from a previous run, a paper, or a vendor — against SILVA. It reports coverage (how many target sequences contain the probe) and exact off-target specificity in a single SILVA pass, regardless of how many taxa are in the input file.
+
+```bash
+bac-probes validate \
+    ./silva_db/SILVA_138.1_SSURef_NR99_tax_silva_full_align_trunc.fasta.gz \
+    my_probes.csv \
+    --output validation_results.tsv
+```
+
+The input CSV requires three columns: `taxa`, `level`, `sequences` (one probe per row). If your file has no header row, add `--no-header`.
+
+```csv
+taxa,level,sequences
+Fusobacterium nucleatum,species,TCGCGATTACTAGCGATTCCAACTTCATGTAC
+Bacteroides,genus,ATCGATCGATCGATCGATCGATCGATCGATCG
+Firmicutes,phylum,GCGTATCCGGATTTATGGGCGTAAAGCGCGTC
+```
+
+Both orientations of each probe are checked (forward and reverse complement), so it does not matter whether you supply the k-mer or its reverse complement.
+
+Add `--blast` to also score near-match off-target binding via BLAST (same position-weighted scoring as `bac-probes find`):
+
+```bash
+bac-probes validate \
+    ./silva_db/SILVA_138.1_SSURef_NR99_tax_silva_full_align_trunc.fasta.gz \
+    my_probes.csv \
+    --blast \
+    --blast-max-target-seqs 10000 \
+    --output validation_results.tsv
+```
+
+Output columns (exact scoring, always present):
+
+| Column | Description |
+|---|---|
+| `taxa` | As supplied |
+| `level` | As supplied |
+| `sequence` | Probe sequence as supplied |
+| `probe_len` | Length in bp |
+| `target_seqs` | SILVA sequences belonging to this taxon |
+| `coverage_count` | Target seqs containing the probe (either strand) |
+| `coverage_pct` | `coverage_count / target_seqs × 100` |
+| `exact_offtarget` | Background seqs with an exact hit |
+| `exact_bg_seqs` | Total background seqs scanned |
+| `exact_specificity` | `1 − (exact_offtarget / exact_bg_seqs)` |
+| `top_offtargets` | Most frequent off-target organism names (exact hits) |
+
+Additional columns added by `--blast` (same definitions as `bac-probes find`): `blast_total_hits`, `blast_target_hits`, `blast_offtarget_hits`, `blast_weighted_offtarget`, `blast_specificity`, `blast_weighted_specificity`, `blast_top_offtarget`, `blast_capped`.
+
 ## Key options
 
 ### `bac-probes find`
@@ -185,6 +236,19 @@ Output columns: `subtaxon`, `total_seqs`, one column per k-mer (`k1_…`, `k2_�
 | `--top-n` | `3` | Number of k-mers to pick from `--from-tsv` |
 | `--min-seqs` | `5` | Minimum sequences to include a breakdown row |
 | `--output` | — | Write table to TSV (default: stdout only) |
+
+### `bac-probes validate`
+
+| Option | Default | Description |
+|---|---|---|
+| `--no-header` | off | CSV has no header row; assumes columns are `taxa`, `level`, `sequences` |
+| `--top-offtargets` | `5` | Number of top off-target organism names to report per probe |
+| `--blast / --no-blast` | `--no-blast` | Run BLAST to score near-match off-target binding |
+| `--blast-db` | `silva_db/silva` | BLAST database prefix (created by `build-db`) |
+| `--blast-identity` | `85.0` | Min % identity for a BLAST hit to count |
+| `--blast-max-target-seqs` | `10000` | BLAST `max_target_seqs` cap |
+| `--threads` | `4` | CPU threads for BLAST |
+| `--output` | — | Write results to TSV (default: print to stdout only) |
 
 ## Interpreting results
 
