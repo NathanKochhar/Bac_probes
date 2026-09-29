@@ -177,7 +177,7 @@ Firmicutes,phylum,GCGTATCCGGATTTATGGGCGTAAAGCGCGTC
 
 Both orientations of each probe are checked (forward and reverse complement), so it does not matter whether you supply the k-mer or its reverse complement.
 
-Add `--blast` to also score near-match off-target binding via BLAST (same position-weighted scoring as `bac-probes find`):
+Add `--blast` to also score near-match off-target binding via BLAST (same position-weighted scoring as `bac-probes find`). When using `--blast` with `validate`, the probe sequence you supply is treated as the full k-mer — its length determines the position-weighting window. Mismatches in BLAST hits are scored by their distance from the centre of your probe sequence: a mismatch at the centre contributes close to 1.0 (high protection against off-target binding), while terminal mismatches contribute close to 0.0 (minimal protection). This means supplying a truncated or padded sequence will shift the weighting incorrectly, so pass the exact probe length you intend to use.
 
 ```bash
 bac-probes validate \
