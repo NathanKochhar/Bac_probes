@@ -1,0 +1,85 @@
+KAN2M3 PHYLUM PROBE DESIGN - RUN SUMMARY
+========================================
+Date: 2026-09-29
+Database: SILVA 138.1 SSURef NR99 (510,508 sequences)
+Probe design: 32-mers, GC 35-65%, no homopolymers >= 5, exact matching only (no BLAST)
+Machine: AMD Ryzen 7 9800X3D (8 cores / 16 threads), 31 GB RAM
+
+The "probe" column in every output file is the reverse complement of the k-mer;
+this is the sequence to order for in-situ use.
+
+
+KEY METRIC: PRECISION
+---------------------
+precision = target hits / (target hits + exact off-target hits)
+
+i.e. the fraction of all SILVA sequences carrying the probe that belong to the
+target taxon. Raw off-target counts cannot be compared between a taxon of 11
+sequences and one of 136,000; precision can. Precision 1.0 = zero exact
+off-target matches in SILVA.
+
+
+NAME MAPPING (CSV name -> SILVA 138.1 name)
+-------------------------------------------
+Phylum CSV uses "NCBI-SILVA" name pairs; the SILVA part was used, except:
+  Campylobacterota-Campilobacterota -> Campylobacterota
+    ("Campilobacterota" is the GTDB spelling; SILVA uses Campylobacterota)
+
+
+==============================================================================
+PHYLUM  (KAN2M3/Phylum/)
+==============================================================================
+
+Goal: ~10 highly specific probes per phylum, each with ~50% coverage.
+
+Method
+  - Ran `bac-probes find --level phylum -k 32 --min-conservation 0.25 --no-blast`
+    for all 6 phyla in parallel (~22 minutes; >= 17 GB RAM stayed free).
+  - Selected probes with precision >= 0.95.
+  - Stepped a per-probe conservation floor down from 50% (50, 45, ... 25%) and
+    used the highest floor giving 10 probes.
+  - Ranked by precision, then conservation.
+  - Probes sharing a 16-bp stretch count as the same site, so the 10 probes
+    cover different parts of the gene. Two probes can still overlap by up to
+    15 bp.
+
+Results
+  Phylum            Target seqs  Per-probe cons. (mean)  Pooled cov. (10)  Min precision
+  Firmicutes          117,419    27-40% (33%)            85.8%             0.967
+  Proteobacteria      136,158    25-40% (31%)            64.8%             0.986
+  Bacteroidota         46,851    30-45% (36%)            83.4%             0.972
+  Actinobacteriota     39,596    31-40% (35%)            88.3%             0.989
+  Fusobacteriota        1,838    50-68% (59%)            84.3%             0.986
+  Campylobacterota      4,820    31-89% (47%)            97.1%             0.980
+
+Pooled coverage = target sequences hit by at least one of the 10 probes.
+
+Notes
+  - Individual probes mostly land at 30-45% conservation, not 50%. Only
+    Fusobacteriota reached ~50% per probe while staying specific.
+  - For big, diverse phyla there is a trade-off between specificity and
+    per-probe coverage. For Proteobacteria, no 32-mer at >= 50% conservation
+    reaches 90% precision (the best is 0.90). Firmicutes and Bacteroidota have
+    only 1-2 k-mers at that level passing 98% precision, all at the same site.
+    Specificity was kept, and the 10-probe pool provides the coverage (65-97%).
+  - For Firmicutes and Proteobacteria, every k-mer at >= 45% conservation hits
+    > 500 background sequences. Precision is still high because those k-mers
+    also hit 50-70k target sequences.
+
+Files
+  Phylum_summary.csv                one row per phylum
+  Phylum_all_selected_probes.csv    all 60 selected probes
+  selected/<Phylum>_selected_probes.csv
+  find_runs/<Phylum>_find.tsv       full candidate lists from bac-probes find
+  logs/, run_find.sh, summarize.py  to repeat the run
+
+
+==============================================================================
+CAVEATS
+==============================================================================
+  - No BLAST was run. "Zero off-targets" means no EXACT 32-bp match in SILVA.
+    Probes that nearly match another taxon with 1-2 mismatches, especially
+    near the probe ends, could still bind. To check the final lists:
+      bac-probes validate <silva.fasta.gz> <probes.csv> --blast
+  - Coverage and specificity are measured against SILVA 138.1 only. Taxa
+    under-represented in SILVA may behave differently in real samples.

@@ -1,0 +1,35 @@
+taxa,silva_genus,target_seqs,candidates_found,precision_floor_used,probes_selected,pooled_coverage_pct,conservation_min_pct,conservation_max_pct,precision_min,precision_mean,exact_offtarget_total,exact_offtarget_max,top_offtarget_genera
+Staphylococcus,Staphylococcus,6416,3106,0.995,10,97.63,2.01,85.96,0.9951,0.9968,111,27,Bacillus (22); Streptococcus (21); Gemella (15)
+Streptococcus,Streptococcus,7073,5072,0.999,10,67.33,2.05,29.87,0.999,0.9998,2,1,Granulicatella sp. BB-11 (1); Fastidiosipila (1)
+Enterococcus,Enterococcus,2061,2630,0.995,10,67.83,2.33,43.43,0.9956,0.9982,10,3,Lactococcus (2); Allorhizobium-Neorhizobium-Pararhizobium-Rhizobium (2); uncultured Enterococcus sp. (2)
+Lactobacillus,Lactobacillus,1408,5690,0.99,10,69.67,2.63,57.67,0.9901,0.9953,23,7,Limosilactobacillus (10); Streptococcus (3); Finegoldia (3)
+Clostridium,Clostridium sensu stricto 1,1941,5924,0.98,10,60.69,2.16,27.15,0.9815,0.9897,35,9,Clostridium sensu stricto 13 (9); Peptoclostridium (5); Sarcina (4)
+Lachnospira,Lachnospira,141,5031,0.9,10,71.63,2.13,31.91,0.9167,0.9773,9,4,[Eubacterium] eligens group (2); Dorea (1); Akkermansia (1)
+Blautia,Blautia,3091,5539,0.9,6,8.99,2.01,3.49,0.9076,0.9271,39,11,uncultured (11); [Ruminococcus] torques group (10); uncultured bacterium (4)
+Anaerostipes,Anaerostipes,491,4845,0.9,10,90.22,2.44,60.49,0.9,0.9322,122,33,Lachnospiraceae UCG-008 (28); Fusicatenibacter (16); Ruminococcus (12)
+Ruminococcus,Ruminococcus,1442,7326,0.95,10,54.37,2.29,19.83,0.9535,0.9694,40,13,uncultured (8); uncultured bacterium (8); Lachnospiraceae NK4A136 group (4)
+Escherichia-Shigella,Escherichia-Shigella,7667,1836,0.995,4,97.4,86.12,90.65,0.995,0.9954,124,35,Klebsiella (21); Enterobacter (15); Pseudomonas (15)
+Enterobacter,Enterobacter,2404,2569,0.9,5,9.32,2.5,3.87,0.9091,0.9431,23,8,Erwinia (5); Klebsiella (4); Citrobacter (3)
+Salmonella,Salmonella,5327,1688,0.995,4,96.85,2.5,96.49,0.9955,0.9978,33,23,Citrobacter (10); Enterobacter (7); Pluralibacter (4)
+Pseudomonas,Pseudomonas,9234,3765,0.995,10,91.07,2.57,54.61,0.9951,0.9967,70,25,unassigned (14); uncultured (8); Pseudoxanthomonas (5)
+Moraxella,Moraxella,345,4082,1.0,10,67.54,2.32,39.71,1.0,1.0,0,0,
+Acinetobacter,Acinetobacter,3378,3671,1.0,10,78.21,2.37,27.32,1.0,1.0,0,0,
+Neisseria,Neisseria,1395,3669,1.0,10,81.0,2.01,35.63,1.0,1.0,0,0,
+Bacteroides,Bacteroides,3747,6778,1.0,10,64.61,2.64,25.67,1.0,1.0,0,0,
+Prevotella,Prevotella,2199,7813,0.99,10,54.71,2.0,17.24,0.9916,0.9975,6,2,Prevotella_9 (4); Paraprevotella (2)
+Porphyromonas,Porphyromonas,714,6994,1.0,10,96.36,3.78,48.74,1.0,1.0,0,0,
+Tannerella,Tannerella,83,7550,1.0,10,98.8,3.61,60.24,1.0,1.0,0,0,
+Parabacteroides,Parabacteroides,472,4970,1.0,10,66.95,2.75,25.85,1.0,1.0,0,0,
+Alistipes,Alistipes,555,5592,1.0,10,65.95,3.42,21.44,1.0,1.0,0,0,
+Cutibacterium,Cutibacterium,1693,2378,0.999,10,90.25,2.19,68.46,0.9991,0.9998,2,1,Enhydrobacter (1); Corynebacterium (1)
+Corynebacterium,Corynebacterium,3609,6274,1.0,10,61.43,2.74,15.24,1.0,1.0,0,0,
+Actinomyces,Actinomyces,717,4437,1.0,10,87.59,2.65,45.33,1.0,1.0,0,0,
+Bifidobacterium,Bifidobacterium,708,3976,1.0,10,99.44,2.82,73.31,1.0,1.0,0,0,
+Micrococcus,Micrococcus,332,2312,0.95,10,95.18,2.11,74.4,0.9724,0.9899,23,7,Cutibacterium (6); Arthrobacter (4); Pseudarthrobacter (4)
+Fusobacterium,Fusobacterium,1164,4961,1.0,10,99.4,4.3,68.73,1.0,1.0,0,0,
+Cetobacterium,Cetobacterium,136,4633,1.0,10,100.0,3.68,72.06,1.0,1.0,0,0,
+Leptotrichia,Leptotrichia,349,7073,1.0,10,100.0,18.05,78.51,1.0,1.0,0,0,
+Sneathia,Sneathia,11,2934,1.0,10,100.0,81.82,100.0,1.0,1.0,0,0,
+Streptobacillus,Streptobacillus,30,7706,1.0,10,100.0,70.0,83.33,1.0,1.0,0,0,
+Campylobacter,Campylobacter,1035,5750,1.0,10,99.71,2.22,68.31,1.0,1.0,0,0,
+Helicobacter,Helicobacter,640,4979,1.0,10,100.0,5.16,67.19,1.0,1.0,0,0,

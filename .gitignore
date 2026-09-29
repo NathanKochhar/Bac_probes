@@ -1,5 +1,7 @@
 silva_db/
-KAN2M3/
+KAN2M3/**/cache/
+KAN2M3/**/find_runs/
+KAN2M3/*.zip
 *.egg-info/
 __pycache__/
 *.py[cod]

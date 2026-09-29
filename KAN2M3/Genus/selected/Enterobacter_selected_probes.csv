@@ -1,0 +1,6 @@
+taxa,silva_genus,probe_rank,new_seqs_covered,kmer,probe,gc_pct,conservation_pct,target_seqs,target_hits,exact_offtarget,exact_bg_seqs,exact_specificity,precision,cumulative_coverage_pct,top_offtarget_genera
+Enterobacter,Enterobacter,1,93,TAATAACCTCAGCGATTGACGTTACCCGCAGA,TCTGCGGGTAACGTCAATCGCTGAGGTTATTA,46.9,3.87,2404,93,8,508104,0.999984,0.9208,3.87,Klebsiella (2); Erwinia (1); Yersinia (1)
+Enterobacter,Enterobacter,2,78,AAGTACTTTCAGCGGGGAGGAAGGCGACAGGG,CCCTGTCGCCTTCCTCCCCGCTGAAAGTACTT,59.4,3.24,2404,78,1,508104,0.999998,0.9873,7.11,Erwinia (1)
+Enterobacter,Enterobacter,3,48,AGTCGAGCGGTAACACAGGGAGCTTGCTCCTG,CAGGAGCAAGCTCCCTGTGTTACCGCTCGACT,59.4,2.5,2404,60,6,508104,0.999988,0.9091,9.11,Klebsiella (2); Citrobacter (1); Enterobacillus (1)
+Enterobacter,Enterobacter,4,3,GGGAGGAAGGCGTTGAGGTTAATAACCTCAGC,GCTGAGGTTATTAACCTCAACGCCTTCCTCCC,53.1,3.0,2404,72,7,508104,0.999986,0.9114,9.23,Erwinia (2); Yersinia (1); Rheinheimera (1)
+Enterobacter,Enterobacter,5,2,GACAGGGTTAATAACCCTGTCGATTGACGTTA,TAACGTCAATCGACAGGGTTATTAACCCTGTC,43.8,3.08,2404,74,1,508104,0.999998,0.9867,9.32,Erwinia (1)

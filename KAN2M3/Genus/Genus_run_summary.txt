@@ -1,0 +1,127 @@
+KAN2M3 GENUS PROBE DESIGN - RUN SUMMARY
+=======================================
+Date: 2026-09-29
+Database: SILVA 138.1 SSURef NR99 (510,508 sequences)
+Probe design: 32-mers, GC 35-65%, no homopolymers >= 5, exact matching only (no BLAST)
+Machine: AMD Ryzen 7 9800X3D (8 cores / 16 threads), 31 GB RAM
+
+The "probe" column in every output file is the reverse complement of the k-mer;
+this is the sequence to order for in-situ use.
+
+
+KEY METRIC: PRECISION
+---------------------
+precision = target hits / (target hits + exact off-target hits)
+
+i.e. the fraction of all SILVA sequences carrying the probe that belong to the
+target taxon. Raw off-target counts cannot be compared between a taxon of 11
+sequences and one of 136,000; precision can. Precision 1.0 = zero exact
+off-target matches in SILVA.
+
+
+NAME MAPPING (CSV name -> SILVA 138.1 name)
+-------------------------------------------
+Genus:
+  Clostridium -> Clostridium sensu stricto 1
+    (SILVA's plain "Clostridium" has only 2 sequences; sensu stricto 1 is the
+     true genus - C. perfringens, C. butyricum, etc.)
+  Prevotella: SILVA splits off Prevotella_7 and Prevotella_9; these count as
+     off-target.
+  Lactobacillus: SILVA 138.1 uses the post-2020 narrow definition.
+
+
+
+==============================================================================
+GENUS  (KAN2M3/Genus/)
+==============================================================================
+
+Goal: ~10 highly specific probes per genus with POOLED coverage of ~50%.
+Individual probes may have low coverage if they are very specific.
+
+Method
+  - genus_pipeline.py reuses the bac_probes library (same k-mer filters and
+    exact off-target counting as `find --no-blast`). It reads SILVA once and
+    scores all 34 genera in parallel on 14 threads (~12 minutes), instead of
+    68 full passes over SILVA for 34 separate find runs.
+  - Candidates: k-mers present in >= 2% of the genus's sequences.
+  - Precision floors tried from strict to loose:
+    1.0, 0.999, 0.995, 0.99, 0.98, 0.95, 0.90.
+    The strictest floor whose 10-probe pool reaches 50% pooled coverage is used.
+  - Greedy selection: each pick adds the most not-yet-covered target
+    sequences. Probes sharing a 16-bp stretch are skipped.
+  - Top-up: if coverage saturates before 10 probes, remaining slots are filled
+    with extra non-overlapping probes at the same precision floor, for more
+    signal per cell.
+
+Results (319 probes total)
+  Genus                 Target seqs  Precision floor  Probes  Pooled cov.  Exact off-targets (sum)
+  Staphylococcus           6,416     0.995            10       97.6%       111
+  Streptococcus            7,073     0.999            10       67.3%         2
+  Enterococcus             2,061     0.995            10       67.8%        10
+  Lactobacillus            1,408     0.99             10       69.7%        23
+  Clostridium (s.s. 1)     1,941     0.98             10       60.7%        35
+  Lachnospira                141     0.90             10       71.6%         9
+  Blautia                  3,091     0.90              6        9.0%  *     39
+  Anaerostipes               491     0.90             10       90.2%       122
+  Ruminococcus             1,442     0.95             10       54.4%        40
+  Escherichia-Shigella     7,667     0.995             4       97.4%       124
+  Enterobacter             2,404     0.90              5        9.3%  *     23
+  Salmonella               5,327     0.995             4       96.9%        33
+  Pseudomonas              9,234     0.995            10       91.1%        70
+  Moraxella                  345     1.0              10       67.5%         0
+  Acinetobacter            3,378     1.0              10       78.2%         0
+  Neisseria                1,395     1.0              10       81.0%         0
+  Bacteroides              3,747     1.0              10       64.6%         0
+  Prevotella               2,199     0.99             10       54.7%         6
+  Porphyromonas              714     1.0              10       96.4%         0
+  Tannerella                  83     1.0              10       98.8%         0
+  Parabacteroides            472     1.0              10       67.0%         0
+  Alistipes                  555     1.0              10       66.0%         0
+  Cutibacterium            1,693     0.999            10       90.3%         2
+  Corynebacterium          3,609     1.0              10       61.4%         0
+  Actinomyces                717     1.0              10       87.6%         0
+  Bifidobacterium            708     1.0              10       99.4%         0
+  Micrococcus                332     0.95             10       95.2%        23
+  Fusobacterium            1,164     1.0              10       99.4%         0
+  Cetobacterium              136     1.0              10      100.0%         0
+  Leptotrichia               349     1.0              10      100.0%         0
+  Sneathia                    11     1.0              10      100.0%         0
+  Streptobacillus             30     1.0              10      100.0%         0
+  Campylobacter            1,035     1.0              10       99.7%         0
+  Helicobacter               640     1.0              10      100.0%         0
+  * = pooled-coverage goal not reached
+
+Summary
+  - 32 of 34 genera reach the ~50% pooled-coverage goal.
+  - 18 genera have 10 probes with zero exact off-targets (precision 1.0).
+  - Every pool that reached the goal has precision >= 0.90; most are >= 0.99.
+
+Genera that could not reach the goal
+  - Blautia (9%) and Enterobacter (9%) stay far below 50% even at 0.90
+    precision. Their 16S sequences can't be told apart from close relatives:
+      Enterobacter probes also hit Erwinia, Klebsiella, Citrobacter.
+      Blautia probes also hit [Ruminococcus] torques group and uncultured
+      Lachnospiraceae.
+    Reaching 50% would mean accepting probes that also bind those genera.
+  - Escherichia-Shigella and Salmonella have only 4 probes each: no other
+    non-overlapping probes reached 0.995 precision. The 4 still cover ~97%.
+
+Files
+  Genus_summary.csv                 one row per genus, incl. top off-target genera
+  Genus_all_selected_probes.csv     all 319 selected probes
+  selected/<Genus>_selected_probes.csv
+      per-genus selections, with new_seqs_covered, cumulative_coverage_pct
+      and top_offtarget_genera columns
+  find_runs/<Genus>_find.tsv        full candidate lists
+  genus_pipeline.py, genus_pipeline.log   to repeat the run
+
+
+==============================================================================
+CAVEATS
+==============================================================================
+  - No BLAST was run. "Zero off-targets" means no EXACT 32-bp match in SILVA.
+    Probes that nearly match another taxon with 1-2 mismatches, especially
+    near the probe ends, could still bind. To check the final lists:
+      bac-probes validate <silva.fasta.gz> <probes.csv> --blast
+  - Coverage and specificity are measured against SILVA 138.1 only. Taxa
+    under-represented in SILVA may behave differently in real samples.

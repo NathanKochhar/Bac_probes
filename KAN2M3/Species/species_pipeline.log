@@ -1,0 +1,36 @@
+Stage 1: reading SILVA …
+  510,508 sequences
+  Fusobacterium nucleatum: 137 target, SILVA genus 'Fusobacterium', 850 ambiguous same-genus seqs excluded
+  Helicobacter pylori: 338 target, SILVA genus 'Helicobacter', 125 ambiguous same-genus seqs excluded
+  Prevotella jejuni: 5 target, SILVA genus 'Prevotella_7', 466 ambiguous same-genus seqs excluded
+  Escherichia coli: 5267 target, SILVA genus 'Escherichia-Shigella', 1529 ambiguous same-genus seqs excluded
+  Cutibacterium acnes: 79 target, SILVA genus 'Cutibacterium', 1585 ambiguous same-genus seqs excluded
+  Campylobacter jejuni: 356 target, SILVA genus 'Campylobacter', 274 ambiguous same-genus seqs excluded
+  Enterobacter hormaechei: 271 target, SILVA genus 'Enterobacter', 997 ambiguous same-genus seqs excluded
+  scoring conservation …
+  10,687 candidate k-mers
+  exact off-target scan …
+Stage 2: BLAST 108 candidates across 7 species (identity 85.0%, max_target_seqs 50000)
+  Fusobacterium nucleatum: 35 BLASTed  [35/108, 0.4 min]
+  Helicobacter pylori: 44 BLASTed  [79/108, 0.9 min]
+  Prevotella jejuni: 7 BLASTed  [86/108, 1.0 min]
+  Escherichia coli: 4 BLASTed  [90/108, 1.1 min]
+  Cutibacterium acnes: 11 BLASTed  [101/108, 1.3 min]
+  Campylobacter jejuni: 7 BLASTed  [108/108, 1.3 min]
+  Enterobacter hormaechei: 0 BLASTed  [108/108, 1.3 min]
+Selecting …
+  Fusobacterium nucleatum: floor 0.95 -> 8 probes, pooled 55.5%
+  Helicobacter pylori: floor 0.999 -> 6 probes, pooled 86.7%
+  Prevotella jejuni: floor 0.999 -> 0 probes, pooled 0.0%
+  Escherichia coli: floor 0.999 -> 0 probes, pooled 0.0%
+  Cutibacterium acnes: floor 0.95 -> 2 probes, pooled 7.6%
+  Campylobacter jejuni: floor 0.999 -> 0 probes, pooled 0.0%
+  Enterobacter hormaechei: floor 0.999 -> 0 probes, pooled 0.0%
+                   taxa          silva_genus  target_seqs  ambiguous_seqs_excluded  candidates_found  candidates_blasted  blast_spec_floor_used  probes_selected  pooled_coverage_pct  conservation_min_pct  conservation_max_pct  blast_weighted_spec_min  blast_weighted_spec_mean  exact_precision_min  exact_offtarget_total  blast_offtarget_hits_total  probes_blast_capped
+Fusobacterium nucleatum        Fusobacterium          137                      850              2334                  35                  0.950                8                55.47                  2.19                 20.44                 0.951068                    0.9757               0.9032                    5.0                     16468.0                    0
+    Helicobacter pylori         Helicobacter          338                      125              1896                  44                  0.999                6                86.69                  2.37                 66.27                 0.999848                    1.0000               1.0000                    0.0                       894.0                    0
+      Prevotella jejuni         Prevotella_7            5                      466              1556                   7                  0.999                0                 0.00                   NaN                   NaN                      NaN                       NaN                  NaN                    NaN                         NaN                    0
+       Escherichia coli Escherichia-Shigella         5267                     1529              1731                   4                  0.999                0                 0.00                   NaN                   NaN                      NaN                       NaN                  NaN                    NaN                         NaN                    0
+    Cutibacterium acnes        Cutibacterium           79                     1585              1596                  11                  0.950                2                 7.59                  2.53                  5.06                 0.960927                    0.9749               1.0000                    0.0                      3543.0                    0
+   Campylobacter jejuni        Campylobacter          356                      274              1568                   7                  0.999                0                 0.00                   NaN                   NaN                      NaN                       NaN                  NaN                    NaN                         NaN                    0
+Enterobacter hormaechei         Enterobacter          271                      997              1551                   0                  0.999                0                 0.00                   NaN                   NaN                      NaN                       NaN                  NaN                    NaN                         NaN                    0

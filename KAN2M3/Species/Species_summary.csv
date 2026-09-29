@@ -1,0 +1,8 @@
+taxa,silva_genus,target_seqs,ambiguous_seqs_excluded,candidates_found,candidates_blasted,blast_spec_floor_used,probes_selected,pooled_coverage_pct,conservation_min_pct,conservation_max_pct,blast_weighted_spec_min,blast_weighted_spec_mean,exact_precision_min,exact_offtarget_total,blast_offtarget_hits_total,probes_blast_capped,top_offtarget_species
+Fusobacterium nucleatum,Fusobacterium,137,850,2334,35,0.95,8,55.47,2.19,20.44,0.951068,0.9757,0.9032,5.0,16468.0,0,Fusobacterium periodonticum (5); uncultured bacterium (3)
+Helicobacter pylori,Helicobacter,338,125,1896,44,0.999,6,86.69,2.37,66.27,0.999848,1.0,1.0,0.0,894.0,0,Helicobacter heilmannii (3); uncultured bacterium (1); Campylobacter jejuni (1)
+Prevotella jejuni,Prevotella_7,5,466,1556,7,0.999,0,0.0,,,,,,,,0,
+Escherichia coli,Escherichia-Shigella,5267,1529,1731,4,0.999,0,0.0,,,,,,,,0,
+Cutibacterium acnes,Cutibacterium,79,1585,1596,11,0.95,2,7.59,2.53,5.06,0.960927,0.9749,1.0,0.0,3543.0,0,uncultured bacterium (2)
+Campylobacter jejuni,Campylobacter,356,274,1568,7,0.999,0,0.0,,,,,,,,0,
+Enterobacter hormaechei,Enterobacter,271,997,1551,0,0.999,0,0.0,,,,,,,,0,

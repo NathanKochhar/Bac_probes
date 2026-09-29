@@ -1,0 +1,7 @@
+taxa,silva_genus,probe_rank,new_seqs_covered,kmer,probe,gc_pct,conservation_pct,target_seqs,target_hits,exact_offtarget,exact_bg_seqs,exact_specificity,precision,cumulative_coverage_pct,top_offtarget_genera
+Blautia,Blautia,1,108,GAAGGCGGGACCGATGACTGGGGTGAAGTCGT,ACGACTTCACCCCAGTCATCGGTCCCGCCTTC,62.5,3.49,3091,108,11,507417,0.999978,0.9076,3.49,Faecalibacterium (2); Lactobacillus (1); uncultured (1)
+Blautia,Blautia,2,90,ACTGCTCTTGGAACTGCGCGGCTGGAGTGCAG,CTGCACTCCAGCCGCGCAGTTCCAAGAGCAGT,62.5,2.91,3091,90,6,507417,0.999988,0.9375,6.41,uncultured (4); Roseburia (1); Erysipelatoclostridium (1)
+Blautia,Blautia,3,70,AAGGGAGCGTAGACGGTGTTGCAAGTCTGATG,CATCAGACTTGCAACACCGTCTACGCTCCCTT,53.1,2.33,3091,72,7,507417,0.999986,0.9114,8.67,[Ruminococcus] torques group (4); [Ruminococcus] gauvreauii group (1); Lachnospiraceae UCG-008 (1)
+Blautia,Blautia,4,9,CTGCTGGACTGCGACTGACGTTGAGGCCCGAA,TTCGGGCCTCAACGTCAGTCGCAGTCCAGCAG,62.5,2.85,3091,88,7,507417,0.999986,0.9263,8.96,uncultured (6); Erysipelatoclostridium (1)
+Blautia,Blautia,5,1,ACTGTGATACTCGAGTGCCGGAGAGGTAAGCG,CGCTTACCTCTCCGGCACTCGAGTATCACAGT,56.2,2.04,3091,63,4,507417,0.999992,0.9403,8.99,[Ruminococcus] torques group (3); uncultured bacterium (1)
+Blautia,Blautia,6,0,CCTGGACTGCATTGGAAACTGTGATACTCGAG,CTCGAGTATCACAGTTTCCAATGCAGTCCAGG,50.0,2.01,3091,62,4,507417,0.999992,0.9394,8.99,[Ruminococcus] torques group (3); uncultured bacterium (1)

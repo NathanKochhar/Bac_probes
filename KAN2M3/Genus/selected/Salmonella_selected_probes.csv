@@ -1,0 +1,5 @@
+taxa,silva_genus,probe_rank,new_seqs_covered,kmer,probe,gc_pct,conservation_pct,target_seqs,target_hits,exact_offtarget,exact_bg_seqs,exact_specificity,precision,cumulative_coverage_pct,top_offtarget_genera
+Salmonella,Salmonella,1,5140,ACGATGTCTACTTGGAGGTTGTGCCCTTGAGG,CCTCAAGGGCACAACCTCCAAGTAGACATCGT,53.1,96.49,5327,5140,23,505181,0.999954,0.9955,96.49,Citrobacter (7); Enterobacter (5); Pluralibacter (4)
+Salmonella,Salmonella,2,15,GAAGAATCCAGAGATGGATTTGTGCCTTCGGG,CCCGAAGGCACAAATCCATCTCTGGATTCTTC,50.0,41.41,5327,2206,7,505181,0.999986,0.9968,96.77,Trabulsiella (2); Citrobacter (2); Enterobacter (1)
+Salmonella,Salmonella,3,4,ACCTTACCTGGTCTTGACATCCACAGAAGAAT,ATTCTTCTGTGGATGTCAAGACCAGGTAAGGT,43.8,41.88,5327,2231,3,505181,0.999994,0.9987,96.85,Enterobacter (1); Citrobacter (1); Dickeya (1)
+Salmonella,Salmonella,4,0,TTGACATCCACGGAAGAATTCAGAGATGGATT,AATCCATCTCTGAATTCTTCCGTGGATGTCAA,40.6,2.5,5327,133,0,505181,1.0,1.0,96.85,

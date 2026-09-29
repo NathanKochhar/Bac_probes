@@ -1,0 +1,5 @@
+taxa,silva_genus,probe_rank,new_seqs_covered,kmer,probe,gc_pct,conservation_pct,target_seqs,target_hits,exact_offtarget,exact_bg_seqs,exact_specificity,precision,cumulative_coverage_pct,top_offtarget_genera
+Escherichia-Shigella,Escherichia-Shigella,1,6950,AAAGTACTTTCAGCGGGGAGGAAGGGAGTAAA,TTTACTCCCTTCCTCCCCGCTGAAAGTACTTT,46.9,90.65,7667,6950,35,502841,0.99993,0.995,90.65,Klebsiella (5); Pseudomonas (5); Enterobacter (4)
+Escherichia-Shigella,Escherichia-Shigella,2,374,TCAACCTGGGAACTGCATCTGATACTGGCAAG,CTTGCCAGTATCAGATGCAGTTCCCAGGTTGA,50.0,90.37,7667,6929,34,502841,0.999932,0.9951,95.53,Salmonella (9); Klebsiella (5); Enterobacter (3)
+Escherichia-Shigella,Escherichia-Shigella,3,125,AATACCTTTGCTCATTGACGTTACCCGCAGAA,TTCTGCGGGTAACGTCAATGAGCAAAGGTATT,43.8,86.55,7667,6636,27,502841,0.999946,0.9959,97.16,Klebsiella (5); Enterobacter (4); Pseudomonas (4)
+Escherichia-Shigella,Escherichia-Shigella,4,19,AGGAAGGGAGTAAAGTTAATACCTTTGCTCAT,ATGAGCAAAGGTATTAACTTTACTCCCTTCCT,37.5,86.12,7667,6603,28,502841,0.999944,0.9958,97.4,Klebsiella (6); Enterobacter (4); Pseudomonas (4)

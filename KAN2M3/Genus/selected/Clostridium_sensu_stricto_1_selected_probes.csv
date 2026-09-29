@@ -1,0 +1,11 @@
+taxa,silva_genus,probe_rank,new_seqs_covered,kmer,probe,gc_pct,conservation_pct,target_seqs,target_hits,exact_offtarget,exact_bg_seqs,exact_specificity,precision,cumulative_coverage_pct,top_offtarget_genera
+Clostridium,Clostridium sensu stricto 1,1,527,CGTGCCGCCGCTAACGCATTAAGTATTCCGCC,GGCGGAATACTTAATGCGTTAGCGGCGGCACG,59.4,27.15,1941,527,9,508567,0.999982,0.9832,27.15,Peptoclostridium (3); Sarcina (2); Fusobacterium (1)
+Clostridium,Clostridium sensu stricto 1,2,273,TAAGTGGGATGTGAAATACTCGGGCTTAACCT,AGGTTAAGCCCGAGTATTTCACATCCCACTTA,43.8,17.83,1941,346,6,508567,0.999988,0.983,41.22,Clostridium sensu stricto 13 (4); Sarcina (1); Clostridium sensu stricto 11 (1)
+Clostridium,Clostridium sensu stricto 1,3,145,AAGTCTAGAGTGCAGGAGAGGAGAGTGGAATT,AATTCCACTCTCCTCTCCTGCACTCTAGACTT,46.9,7.52,1941,146,1,508567,0.999998,0.9932,48.69,Sarcina (1)
+Clostridium,Clostridium sensu stricto 1,4,119,CCTAGACTTGACATCTCCTGAATTACTCTGTA,TACAGAGTAATTCAGGAGATGTCAAGTCTAGG,40.6,12.62,1941,245,4,508567,0.999992,0.9839,54.82,Treponema (2); Streptococcus (1); uncultured (1)
+Clostridium,Clostridium sensu stricto 1,5,51,AGTTGGCAATACCCAAAGTTCGTGAGCTAACG,CGTTAGCTCACGAACTTTGGGTATTGCCAACT,46.9,16.38,1941,318,6,508567,0.999988,0.9815,57.44,Paenibacillus (1); Clostridium sensu stricto 6 (1); Oxalophagus (1)
+Clostridium,Clostridium sensu stricto 1,6,42,GTAAAGGGAGCGTAGGCGGATGATTAAGTGGG,CCCACTTAATCATCCGCCTACGCTCCCTTTAC,53.1,17.16,1941,333,5,508567,0.99999,0.9852,59.61,Clostridium sensu stricto 13 (2); Clostridium sensu stricto 3 (1); Peptoclostridium (1)
+Clostridium,Clostridium sensu stricto 1,7,8,AATTAAAGGAGTAATCCGCTATAAGATGGGCC,GGCCCATCTTATAGCGGATTACTCCTTTAATT,40.6,3.14,1941,61,0,508567,1.0,1.0,60.02,
+Clostridium,Clostridium sensu stricto 1,8,5,ACCTCTGTGCCGCCGCAAACGCATTAAGTATT,AATACTTAATGCGTTTGCGGCGGCACAGAGGT,50.0,2.37,1941,46,0,508567,1.0,1.0,60.28,
+Clostridium,Clostridium sensu stricto 1,9,5,GAGATTAGGAAGAATACCAGTGGCGAAGGCGA,TCGCCTTCGCCACTGGTATTCTTCCTAATCTC,50.0,15.46,1941,300,4,508567,0.999992,0.9868,60.54,Clostridium sensu stricto 13 (3); Caldicoprobacter (1)
+Clostridium,Clostridium sensu stricto 1,10,3,TAAAGGAGCAATCCGCTACAAGATGGGCCCGC,GCGGGCCCATCTTGTAGCGGATTGCTCCTTTA,56.2,2.16,1941,42,0,508567,1.0,1.0,60.69,

@@ -1,0 +1,7 @@
+taxa,silva_phylum,target_seqs,candidates_found,candidates_precision_ge_0.95,conservation_floor_used_pct,probes_selected,conservation_min_pct,conservation_mean_pct,conservation_max_pct,pooled_coverage_pct,exact_offtarget_min,exact_offtarget_median,exact_offtarget_max,precision_min,precision_mean,exact_specificity_min,best_probe
+Bacillota-Firmicutes,Firmicutes,117419,280,79,25,10,27.41,33.05,40.15,85.79,41,400.5,1405,0.9673,0.9875,0.996426,GGCTGCTGGCACGTAGTTAGCCGTGGCTTTCT
+Pseudomonadota-Proteobacteria,Proteobacteria,136158,356,108,25,10,25.39,31.45,40.08,64.8,66,306.5,650,0.9856,0.9931,0.998264,AATTCATTTGAGTTTTAACCTTGCGGCCGTAC
+Bacteroidota-Bacteroidota,Bacteroidota,46851,225,161,30,10,30.07,36.45,44.99,83.41,135,163.0,479,0.9715,0.9876,0.998967,AAACCACATGTTCCTCCGCTTGTGCGGGCCCC
+Actinomycetota-Actinobacteriota,Actinobacteriota,39596,417,168,30,10,30.55,35.29,39.87,88.27,11,117.0,147,0.9889,0.9935,0.999688,CACCGGTGTTCCTCCTGATATCTGCGCATTTC
+Fusobacteriota-Fusobacteriota,Fusobacteriota,1838,864,539,50,10,50.38,59.45,68.34,84.33,0,5.0,13,0.9862,0.9943,0.999974,TCTACGAATTTCACCTCTACACTTGTAGTTCC
+Campylobacterota-Campilobacterota,Campylobacterota,4820,468,146,30,10,31.1,46.75,89.38,97.07,5,12.0,65,0.9796,0.99,0.999871,GTGATTCCGAGTAACGCTTGCACCCTCCGTAT
