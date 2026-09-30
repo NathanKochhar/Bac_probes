@@ -1,6 +1,6 @@
 KAN2M3 FAMILY PROBE DESIGN - RUN SUMMARY (WITH BLAST)
 =====================================================
-Date: 2026-09-29
+Date: 2026-09-29 (rerun 2026-09-30)
 Database: SILVA 138.1 SSURef NR99 (510,508 sequences) + SILVA BLAST database
 Probe design: 32-mers, GC 35-65%, no homopolymers >= 5
 BLAST: blastn-short, >= 85% identity, max_target_seqs 50,000
@@ -52,7 +52,7 @@ Stage 1 - exact (~12 min, 14 threads)
   - Candidates: k-mers present in >= 2% of the family's sequences.
   - Exact off-target counts against all other SILVA sequences.
 
-Stage 2 - BLAST (~45 min, 2,714 queries, ~1.3 s each)
+Stage 2 - BLAST (~45 min originally, 2,713 queries, ~1.3 s each)
   - BLASTing every candidate (3,000-11,000 per family) is not feasible, so
     each family BLASTs a pool of up to 120 candidates at distinct sites
     (no two share a 16-bp stretch): up to 60 chosen for coverage and 60 for
@@ -68,52 +68,74 @@ Selection
     filled with extra non-overlapping probes at the same floor.
 
 
+RERUN NOTES (2026-09-30)
+------------------------
+The family run was repeated after a reproducibility bug was found in the
+species run. When candidate k-mers tied on coverage or specificity, the tie
+was broken by the order Python happened to hold them in memory, which is
+randomised on each run, so repeat runs could pick different probes.
+  - Fixed by breaking every tie on the k-mer sequence. Two runs with
+    different hash seeds now give byte-identical output.
+  - The exact-match stage and most BLAST results were reused from cache;
+    only new pool candidates were BLASTed.
+  - Overall results are essentially unchanged: all 25 families still reach
+    50% with 249 probes. The specific probes chosen differ in 24 families
+    (they were tied choices). Notable shifts: Moraxellaceae 0.995 -> 0.999
+    floor (90% -> 52% pooled), Bacteroidaceae 0.999 -> 0.995 (54% -> 72%),
+    Rikenellaceae 0.99 -> 0.98 (53% -> 63%).
+  - The strain fix in bac-probes doesn't affect family-level matching.
+
+
 RESULTS (249 probes total)
 --------------------------
-  Family                Target seqs  BLAST floor  Probes  Pooled cov.  Min exact precision  Main off-target families
-  Staphylococcaceae        6,637     0.995        10      89.7%        0.975                Bacillaceae
-  Streptococcaceae         7,739     0.999        10      80.0%        0.996                Lactobacillaceae
-  Enterococcaceae          2,134     0.995         9      58.6%        0.997                Bacillaceae, Vagococcaceae
-  Lactobacillaceae         6,372     0.999        10      56.3%        1.000                Bacillaceae
-  Clostridiaceae           3,662     0.995        10      72.3%        0.975                (scattered)
-  Lachnospiraceae         23,099     0.98         10      77.6%        0.919                Ruminococcaceae
-  Ruminococcaceae          5,904     0.99         10      52.9%        0.915                Oscillospiraceae
-  Enterobacteriaceae      20,869     0.995        10      75.0%        0.985                Erwiniaceae
-  Pseudomonadaceae         9,419     0.995        10      84.7%        0.991                (scattered)
-  Moraxellaceae            4,720     0.995        10      90.0%        0.979                Pseudomonadaceae
-  Neisseriaceae            1,795     0.999        10      74.2%        0.976                (scattered)
-  Bacteroidaceae           3,747     0.999        10      54.0%        0.987                Prevotellaceae
-  Prevotellaceae           5,132     0.995        10      53.6%        0.994                Bacteroidaceae
-  Porphyromonadaceae         717     0.999        10      83.1%        1.000                (scattered)
-  Tannerellaceae             676     0.99         10      56.5%        0.941                Dysgonomonadaceae, Muribaculaceae
-  Rikenellaceae            2,864     0.99         10      52.7%        0.944                Prevotellaceae
-  Propionibacteriaceae     2,495     0.995        10      76.9%        0.986                Nocardioidaceae
-  Corynebacteriaceae       3,781     0.995        10      82.9%        0.988                (scattered)
-  Actinomycetaceae           967     0.995        10      69.4%        0.983                Microbacteriaceae
-  Bifidobacteriaceae         773     0.999        10      86.7%        1.000                (scattered)
-  Micrococcaceae           3,153     0.995        10      66.7%        0.945                Streptomycetaceae
-  Fusobacteriaceae         1,348     0.999        10      90.1%        1.000                (scattered)
-  Leptotrichiaceae           490     0.999        10      82.4%        1.000                Fusobacteriaceae
-  Campylobacteraceae       1,035     0.999        10      90.9%        1.000                (scattered)
-  Helicobacteraceae          686     0.999        10      85.7%        1.000                (scattered)
+  Family                Target seqs  BLAST floor  Probes  Pooled cov.  Min exact precision  Main off-target family
+  Staphylococcaceae       6,637     0.995       10       89.7%        0.974                Bacillaceae
+  Streptococcaceae        7,739     0.999       10       79.8%        0.996                Lactobacillaceae
+  Enterococcaceae         2,134     0.995        9       58.6%        0.997                (scattered)
+  Lactobacillaceae        6,372     0.999       10       56.7%        1.000                Bacillaceae
+  Clostridiaceae          3,662     0.995       10       72.3%        0.975                (scattered)
+  Lachnospiraceae        23,099     0.98        10       78.0%        0.918                Ruminococcaceae
+  Ruminococcaceae         5,904     0.99        10       52.9%        0.915                Oscillospiraceae
+  Enterobacteriaceae     20,869     0.995       10       75.0%        0.985                Erwiniaceae
+  Pseudomonadaceae        9,419     0.995       10       84.7%        0.991                (scattered)
+  Moraxellaceae           4,720     0.999       10       52.3%        0.991                Pseudomonadaceae
+  Neisseriaceae           1,795     0.999       10       74.0%        0.976                (scattered)
+  Bacteroidaceae          3,747     0.995       10       72.3%        0.985                (scattered)
+  Prevotellaceae          5,132     0.995       10       53.6%        0.994                Bacteroidaceae
+  Porphyromonadaceae        717     0.999       10       83.1%        1.000                Bacteroidaceae
+  Tannerellaceae            676     0.99        10       56.5%        0.941                (scattered)
+  Rikenellaceae           2,864     0.98        10       62.9%        0.951                Prevotellaceae
+  Propionibacteriaceae    2,495     0.995       10       76.9%        0.986                Nocardioidaceae
+  Corynebacteriaceae      3,781     0.995       10       82.2%        0.988                (scattered)
+  Actinomycetaceae          967     0.995       10       72.1%        0.983                Microbacteriaceae
+  Bifidobacteriaceae        773     0.999       10       86.4%        1.000                (scattered)
+  Micrococcaceae          3,153     0.995       10       66.7%        0.945                Streptomycetaceae
+  Fusobacteriaceae        1,348     0.999       10       90.1%        1.000                (scattered)
+  Leptotrichiaceae          490     0.999       10       83.1%        1.000                Fusobacteriaceae
+  Campylobacteraceae      1,035     0.999       10       94.8%        1.000                Sulfurimonadaceae
+  Helicobacteraceae         686     0.999       10       85.3%        1.000                (scattered)
 
-"Main off-target families" = the family most often named as the top BLAST
-off-target across the selected probes; "(scattered)" = no family dominates.
-Full detail is in the top_offtarget_families column of Family_summary.csv.
+"Main off-target family" = the family most often named as the top BLAST
+off-target across the selected probes, when it is the top off-target for at
+least 3 probes; "(scattered)" = no family dominates. Full detail is in the
+top_offtarget_families column of Family_summary.csv.
 
 Summary
-  - All 25 families reach the ~50% pooled-coverage goal (53-91%).
-  - Every pool has BLAST weighted specificity >= 0.98; 24 of 25 are >= 0.99
+  - All 25 families reach the ~50% pooled-coverage goal (52-95%).
+  - Every pool has BLAST weighted specificity >= 0.98; 23 of 25 are >= 0.99
     and 10 are >= 0.999.
   - 7 families have zero exact off-targets across all selected probes.
   - No selected probe hit the BLAST max_target_seqs cap, so the BLAST
     specificity estimates are not truncated.
   - Enterococcaceae has 9 probes, not 10: no further non-overlapping probe
     passed the 0.995 floor.
-  - Weakest pools: Lachnospiraceae (floor 0.98) and Ruminococcaceae /
-    Tannerellaceae / Rikenellaceae (floor 0.99). These sit in crowded
-    lineages (Lachnospirales/Oscillospirales, Bacteroidales); their main
-    cross-reactors are sister families.
+  - Weakest pools: Lachnospiraceae, Rikenellaceae (floor 0.98) and
+    Ruminococcaceae, Tannerellaceae (floor 0.99).
+    These sit in crowded lineages (Lachnospirales/Oscillospirales,
+    Bacteroidales); their main cross-reactors are sister families.
+  - Moraxellaceae now uses the strictest floor (0.999) and covers 52%. In
+    the earlier run its 0.995 pool covered 90%, so wider coverage is
+    available if the last bit of specificity matters less.
 
 
 FILES

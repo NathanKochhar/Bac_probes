@@ -1,79 +1,79 @@
 Stage 1: loading cached exact results
-Stage 2: BLAST 2714 candidates across 25 families (identity 85.0%, max_target_seqs 50000)
-  Staphylococcaceae: 72 BLASTed  [72/2714, 0.0 min]
-  Streptococcaceae: 120 BLASTed  [192/2714, 0.0 min]
-  Enterococcaceae: 51 BLASTed  [243/2714, 0.0 min]
-  Lactobacillaceae: 120 BLASTed  [363/2714, 0.0 min]
-  Clostridiaceae: 120 BLASTed  [483/2714, 0.0 min]
-  Lachnospiraceae: 113 BLASTed  [596/2714, 0.0 min]
-  Ruminococcaceae: 89 BLASTed  [685/2714, 0.0 min]
-  Enterobacteriaceae: 58 BLASTed  [743/2714, 1.4 min]
-  Pseudomonadaceae: 90 BLASTed  [833/2714, 3.3 min]
-  Moraxellaceae: 120 BLASTed  [953/2714, 5.3 min]
-  Neisseriaceae: 108 BLASTed  [1061/2714, 7.1 min]
-  Bacteroidaceae: 120 BLASTed  [1181/2714, 8.4 min]
-  Prevotellaceae: 120 BLASTed  [1301/2714, 9.9 min]
-  Porphyromonadaceae: 120 BLASTed  [1421/2714, 11.1 min]
-  Tannerellaceae: 119 BLASTed  [1540/2714, 12.2 min]
-  Rikenellaceae: 120 BLASTed  [1660/2714, 13.8 min]
-  Propionibacteriaceae: 117 BLASTed  [1777/2714, 15.9 min]
-  Corynebacteriaceae: 120 BLASTed  [1897/2714, 17.3 min]
-  Actinomycetaceae: 120 BLASTed  [2017/2714, 19.2 min]
-  Bifidobacteriaceae: 120 BLASTed  [2137/2714, 20.9 min]
-  Micrococcaceae: 97 BLASTed  [2234/2714, 22.4 min]
-  Fusobacteriaceae: 120 BLASTed  [2354/2714, 24.0 min]
-  Leptotrichiaceae: 120 BLASTed  [2474/2714, 25.8 min]
-  Campylobacteraceae: 120 BLASTed  [2594/2714, 27.1 min]
-  Helicobacteraceae: 120 BLASTed  [2714/2714, 28.6 min]
+Stage 2: BLAST 2713 candidates across 25 families (identity 85.0%, max_target_seqs 50000)
+  Staphylococcaceae: 72 BLASTed  [72/2713, 0.1 min]
+  Streptococcaceae: 120 BLASTed  [192/2713, 0.4 min]
+  Enterococcaceae: 50 BLASTed  [242/2713, 0.5 min]
+  Lactobacillaceae: 120 BLASTed  [362/2713, 1.0 min]
+  Clostridiaceae: 120 BLASTed  [482/2713, 1.9 min]
+  Lachnospiraceae: 113 BLASTed  [595/2713, 2.3 min]
+  Ruminococcaceae: 91 BLASTed  [686/2713, 2.7 min]
+  Enterobacteriaceae: 57 BLASTed  [743/2713, 2.8 min]
+  Pseudomonadaceae: 90 BLASTed  [833/2713, 2.9 min]
+  Moraxellaceae: 120 BLASTed  [953/2713, 3.3 min]
+  Neisseriaceae: 107 BLASTed  [1060/2713, 3.8 min]
+  Bacteroidaceae: 120 BLASTed  [1180/2713, 4.1 min]
+  Prevotellaceae: 120 BLASTed  [1300/2713, 4.2 min]
+  Porphyromonadaceae: 120 BLASTed  [1420/2713, 4.7 min]
+  Tannerellaceae: 120 BLASTed  [1540/2713, 5.1 min]
+  Rikenellaceae: 120 BLASTed  [1660/2713, 5.7 min]
+  Propionibacteriaceae: 117 BLASTed  [1777/2713, 5.9 min]
+  Corynebacteriaceae: 120 BLASTed  [1897/2713, 6.1 min]
+  Actinomycetaceae: 120 BLASTed  [2017/2713, 7.0 min]
+  Bifidobacteriaceae: 120 BLASTed  [2137/2713, 7.7 min]
+  Micrococcaceae: 96 BLASTed  [2233/2713, 8.0 min]
+  Fusobacteriaceae: 120 BLASTed  [2353/2713, 8.3 min]
+  Leptotrichiaceae: 120 BLASTed  [2473/2713, 9.1 min]
+  Campylobacteraceae: 120 BLASTed  [2593/2713, 9.6 min]
+  Helicobacteraceae: 120 BLASTed  [2713/2713, 10.4 min]
 Selecting …
   Staphylococcaceae: floor 0.995 -> 10 probes, pooled 89.7%
-  Streptococcaceae: floor 0.999 -> 10 probes, pooled 80.0%
+  Streptococcaceae: floor 0.999 -> 10 probes, pooled 79.8%
   Enterococcaceae: floor 0.995 -> 9 probes, pooled 58.6%
-  Lactobacillaceae: floor 0.999 -> 10 probes, pooled 56.3%
+  Lactobacillaceae: floor 0.999 -> 10 probes, pooled 56.7%
   Clostridiaceae: floor 0.995 -> 10 probes, pooled 72.3%
-  Lachnospiraceae: floor 0.98 -> 10 probes, pooled 77.6%
+  Lachnospiraceae: floor 0.98 -> 10 probes, pooled 78.0%
   Ruminococcaceae: floor 0.99 -> 10 probes, pooled 52.9%
   Enterobacteriaceae: floor 0.995 -> 10 probes, pooled 75.0%
   Pseudomonadaceae: floor 0.995 -> 10 probes, pooled 84.7%
-  Moraxellaceae: floor 0.995 -> 10 probes, pooled 90.0%
-  Neisseriaceae: floor 0.999 -> 10 probes, pooled 74.2%
-  Bacteroidaceae: floor 0.999 -> 10 probes, pooled 54.0%
+  Moraxellaceae: floor 0.999 -> 10 probes, pooled 52.3%
+  Neisseriaceae: floor 0.999 -> 10 probes, pooled 74.0%
+  Bacteroidaceae: floor 0.995 -> 10 probes, pooled 72.3%
   Prevotellaceae: floor 0.995 -> 10 probes, pooled 53.6%
   Porphyromonadaceae: floor 0.999 -> 10 probes, pooled 83.1%
   Tannerellaceae: floor 0.99 -> 10 probes, pooled 56.5%
-  Rikenellaceae: floor 0.99 -> 10 probes, pooled 52.7%
+  Rikenellaceae: floor 0.98 -> 10 probes, pooled 62.9%
   Propionibacteriaceae: floor 0.995 -> 10 probes, pooled 76.9%
-  Corynebacteriaceae: floor 0.995 -> 10 probes, pooled 82.9%
-  Actinomycetaceae: floor 0.995 -> 10 probes, pooled 69.4%
-  Bifidobacteriaceae: floor 0.999 -> 10 probes, pooled 86.7%
+  Corynebacteriaceae: floor 0.995 -> 10 probes, pooled 82.2%
+  Actinomycetaceae: floor 0.995 -> 10 probes, pooled 72.1%
+  Bifidobacteriaceae: floor 0.999 -> 10 probes, pooled 86.4%
   Micrococcaceae: floor 0.995 -> 10 probes, pooled 66.7%
   Fusobacteriaceae: floor 0.999 -> 10 probes, pooled 90.1%
-  Leptotrichiaceae: floor 0.999 -> 10 probes, pooled 82.4%
-  Campylobacteraceae: floor 0.999 -> 10 probes, pooled 90.9%
-  Helicobacteraceae: floor 0.999 -> 10 probes, pooled 85.7%
+  Leptotrichiaceae: floor 0.999 -> 10 probes, pooled 83.1%
+  Campylobacteraceae: floor 0.999 -> 10 probes, pooled 94.8%
+  Helicobacteraceae: floor 0.999 -> 10 probes, pooled 85.3%
                 taxa  target_seqs  candidates_found  candidates_blasted  blast_spec_floor_used  probes_selected  pooled_coverage_pct  conservation_min_pct  conservation_max_pct  blast_weighted_spec_min  blast_weighted_spec_mean  exact_precision_min  exact_offtarget_total  blast_offtarget_hits_total  probes_blast_capped
-   Staphylococcaceae         6637              3203                  72                  0.995               10                89.74                  2.56                 46.41                 0.995401                    0.9976               0.9748                    101                       46213                    0
-    Streptococcaceae         7739              5731                 120                  0.999               10                80.05                  2.38                 31.21                 0.999039                    0.9996               0.9962                     16                        7136                    0
-     Enterococcaceae         2134              2795                  51                  0.995                9                58.62                  2.11                 41.94                 0.997561                    0.9997               0.9967                      3                        1495                    0
-    Lactobacillaceae         6372             11117                 120                  0.999               10                56.32                  3.48                 18.68                 0.999143                    0.9997               1.0000                      0                      141560                    0
-      Clostridiaceae         3662              7316                 120                  0.995               10                72.34                  2.13                 30.37                 0.995382                    0.9971               0.9753                     30                       43159                    0
-     Lachnospiraceae        23099              5366                 113                  0.980               10                77.65                  2.54                 48.12                 0.981459                    0.9898               0.9185                    971                      103742                    0
-     Ruminococcaceae         5904              6504                  89                  0.990               10                52.91                  2.02                 27.30                 0.990171                    0.9947               0.9154                     97                       24613                    0
-  Enterobacteriaceae        20869              3026                  58                  0.995               10                74.95                  2.42                 33.66                 0.997437                    0.9986               0.9852                    107                       29594                    0
-    Pseudomonadaceae         9419              3778                  90                  0.995               10                84.67                  5.05                 28.69                 0.995728                    0.9980               0.9907                     60                       42524                    0
-       Moraxellaceae         4720              5869                 120                  0.995               10                89.96                  2.71                 57.20                 0.995976                    0.9980               0.9788                     33                      101217                    0
-       Neisseriaceae         1795              4502                 108                  0.999               10                74.15                  2.01                 33.76                 0.999007                    0.9997               0.9762                      2                       18614                    0
-      Bacteroidaceae         3747              6778                 120                  0.999               10                53.99                  2.08                 10.35                 0.999417                    0.9998               0.9873                      3                       22028                    0
-      Prevotellaceae         5132              5841                 120                  0.995               10                53.62                  2.26                 19.72                 0.995540                    0.9979               0.9936                     11                        9312                    0
-  Porphyromonadaceae          717              7022                 120                  0.999               10                83.12                  3.91                 48.54                 0.999495                    0.9999               1.0000                      0                        9293                    0
-      Tannerellaceae          676              5831                 119                  0.990               10                56.51                  2.51                 18.20                 0.990265                    0.9970               0.9412                      4                        9034                    0
-       Rikenellaceae         2864              6981                 120                  0.990               10                52.72                  2.27                 12.43                 0.991925                    0.9955               0.9442                     30                       43238                    0
-Propionibacteriaceae         2495              4566                 117                  0.995               10                76.91                  2.04                 46.41                 0.995421                    0.9983               0.9857                     21                       19340                    0
-  Corynebacteriaceae         3781              6671                 120                  0.995               10                82.86                  2.22                 46.23                 0.995321                    0.9982               0.9882                     21                       44459                    0
-    Actinomycetaceae          967              6253                 120                  0.995               10                69.39                  2.79                 32.99                 0.995902                    0.9980               0.9833                      2                       70875                    0
-  Bifidobacteriaceae          773              4716                 120                  0.999               10                86.68                  2.07                 67.14                 0.999021                    0.9998               1.0000                      0                       39765                    0
-      Micrococcaceae         3153              4917                  97                  0.995               10                66.70                  2.63                 33.30                 0.995358                    0.9971               0.9453                     31                       68002                    0
-    Fusobacteriaceae         1348              5620                 120                  0.999               10                90.06                  2.00                 77.82                 0.999747                    0.9999               1.0000                      0                       12615                    0
-    Leptotrichiaceae          490              8145                 120                  0.999               10                82.45                  4.29                 55.92                 1.000000                    1.0000               1.0000                      0                       11708                    0
-  Campylobacteraceae         1035              5750                 120                  0.999               10                90.92                  2.32                 68.31                 0.999337                    0.9999               1.0000                      0                        7606                    0
-   Helicobacteraceae          686              5151                 120                  0.999               10                85.71                  2.04                 54.66                 0.999928                    1.0000               1.0000                      0                        7047                    0
+   Staphylococcaceae         6637              3203                  72                  0.995               10                89.74                  2.56                 46.41                 0.995447                    0.9972               0.9744                    119                       44961                    0
+    Streptococcaceae         7739              5731                 120                  0.999               10                79.75                  2.38                 31.10                 0.999039                    0.9996               0.9962                     16                        7047                    0
+     Enterococcaceae         2134              2795                  50                  0.995                9                58.62                  2.11                 41.94                 0.997561                    0.9997               0.9967                      3                        1495                    0
+    Lactobacillaceae         6372             11117                 120                  0.999               10                56.73                  3.48                 18.68                 0.999104                    0.9996               1.0000                      0                      145448                    0
+      Clostridiaceae         3662              7316                 120                  0.995               10                72.31                  2.13                 30.37                 0.995092                    0.9969               0.9753                     31                       54131                    0
+     Lachnospiraceae        23099              5366                 113                  0.980               10                78.04                  2.54                 48.12                 0.981459                    0.9897               0.9185                   1008                      103399                    0
+     Ruminococcaceae         5904              6504                  91                  0.990               10                52.91                  2.02                 27.30                 0.990431                    0.9947               0.9154                     97                       36761                    0
+  Enterobacteriaceae        20869              3026                  57                  0.995               10                74.95                  2.42                 33.66                 0.997437                    0.9986               0.9852                    107                       31301                    0
+    Pseudomonadaceae         9419              3778                  90                  0.995               10                84.66                  5.05                 28.69                 0.995728                    0.9980               0.9913                     59                       42763                    0
+       Moraxellaceae         4720              5869                 120                  0.999               10                52.29                  2.12                 18.52                 0.999062                    0.9996               0.9912                      7                       35676                    0
+       Neisseriaceae         1795              4502                 107                  0.999               10                74.04                  2.28                 33.76                 0.999282                    0.9997               0.9762                      3                       28343                    0
+      Bacteroidaceae         3747              6778                 120                  0.995               10                72.30                  3.74                 18.52                 0.995553                    0.9973               0.9845                     20                       83146                    0
+      Prevotellaceae         5132              5841                 120                  0.995               10                53.62                  2.26                 19.72                 0.995540                    0.9979               0.9936                     11                        9324                    0
+  Porphyromonadaceae          717              7022                 120                  0.999               10                83.12                  3.91                 48.54                 0.999495                    0.9999               1.0000                      0                       10067                    0
+      Tannerellaceae          676              5831                 120                  0.990               10                56.51                  2.51                 18.20                 0.990265                    0.9967               0.9412                      4                        9247                    0
+       Rikenellaceae         2864              6981                 120                  0.980               10                62.92                  2.27                 12.43                 0.980342                    0.9930               0.9505                     36                       43198                    0
+Propionibacteriaceae         2495              4566                 117                  0.995               10                76.87                  2.04                 46.41                 0.995421                    0.9983               0.9857                     21                       19339                    0
+  Corynebacteriaceae         3781              6671                 120                  0.995               10                82.20                  2.22                 46.23                 0.996241                    0.9983               0.9882                     21                       28955                    0
+    Actinomycetaceae          967              6253                 120                  0.995               10                72.08                  2.79                 32.99                 0.995383                    0.9977               0.9833                      2                       88513                    0
+  Bifidobacteriaceae          773              4716                 120                  0.999               10                86.42                  2.33                 67.14                 0.999021                    0.9999               1.0000                      0                       18201                    0
+      Micrococcaceae         3153              4917                  96                  0.995               10                66.67                  2.63                 33.30                 0.995441                    0.9972               0.9453                     31                       70146                    0
+    Fusobacteriaceae         1348              5620                 120                  0.999               10                90.06                  2.00                 77.82                 0.999227                    0.9999               1.0000                      0                       21768                    0
+    Leptotrichiaceae          490              8145                 120                  0.999               10                83.06                  4.29                 55.92                 1.000000                    1.0000               1.0000                      0                       11179                    0
+  Campylobacteraceae         1035              5750                 120                  0.999               10                94.78                  2.32                 68.31                 0.999248                    0.9998               1.0000                      0                        9090                    0
+   Helicobacteraceae          686              5151                 120                  0.999               10                85.28                  3.94                 54.66                 1.000000                    1.0000               1.0000                      0                        4461                    0

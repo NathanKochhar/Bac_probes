@@ -146,7 +146,7 @@ def stage1(targets):
                 "exact_precision": round(hits / (hits + ot), 4),
             })
         tables[t] = pd.DataFrame(rows).sort_values(
-            ["exact_precision", "conservation_pct"], ascending=False)
+            ["exact_precision", "conservation_pct", "kmer"], ascending=[False, False, True])
     result = (tables, covers)
     CACHE.mkdir(exist_ok=True)
     ck.write_bytes(pickle.dumps(result))
@@ -175,21 +175,22 @@ def distinct(kmers, limit, seen=None):
 
 def blast_pool(df):
     ok = df[df.exact_precision >= MIN_EXACT_PREC]
-    by_cov = distinct(ok.sort_values("conservation_pct", ascending=False).kmer, POOL_HALF)
-    by_prec = distinct(ok.sort_values(["exact_precision", "conservation_pct"], ascending=False).kmer,
+    # every sort ends on the k-mer itself so ties break the same way on every run
+    by_cov = distinct(ok.sort_values(["conservation_pct", "kmer"], ascending=[False, True]).kmer, POOL_HALF)
+    by_prec = distinct(ok.sort_values(["exact_precision", "conservation_pct", "kmer"],
+                                      ascending=[False, False, True]).kmer,
                        POOL_HALF, seen=set().union(*map(words, by_cov)) if by_cov else set())
     return by_cov + by_prec
 
 
 def blast_family(taxon, kmers):
     ck = CACHE / f"blast_{taxon}.json"
-    if ck.exists():
-        cached = json.loads(ck.read_text())
-        if set(cached) >= set(kmers):
-            return cached
-    scores = {}
-    for i in range(0, len(kmers), BLAST_CHUNK):
-        chunk = kmers[i:i + BLAST_CHUNK]
+    scores = json.loads(ck.read_text()) if ck.exists() else {}
+    todo = [k for k in kmers if k not in scores]  # only BLAST candidates not cached yet
+    if not todo:
+        return {k: scores[k] for k in kmers}
+    for i in range(0, len(todo), BLAST_CHUNK):
+        chunk = todo[i:i + BLAST_CHUNK]
         out = run_blast(chunk, BLAST_DB, threads=BLAST_THREADS,
                         perc_identity=BLAST_IDENTITY, max_target_seqs=BLAST_MAX_TARGET_SEQS)
         scores.update(parse_blast_results(out, chunk, taxon, LEVEL,
@@ -198,7 +199,7 @@ def blast_family(taxon, kmers):
     for v in scores.values():
         v["blast_capped"] = bool(v["blast_capped"])
     ck.write_text(json.dumps(scores))
-    return scores
+    return {k: scores[k] for k in kmers}
 
 
 # ── selection ─────────────────────────────────────────────────────────────────
@@ -209,7 +210,7 @@ def greedy(df, cover, n_target, floor):
     spec = dict(zip(pool.kmer, pool.blast_weighted_specificity))
     covered, seen, picked = set(), set(), []
     while len(picked) < N_PROBES and sets:
-        best = max(sets, key=lambda k: (len(sets[k] - covered), spec[k]))
+        best = min(sets, key=lambda k: (-len(sets[k] - covered), -spec[k], k))
         if not sets[best] - covered:
             break
         new = sets.pop(best)
@@ -218,7 +219,8 @@ def greedy(df, cover, n_target, floor):
         picked.append((best, len(new - covered)))
         covered |= new
         seen |= words(best)
-    for k in pool.sort_values(["blast_weighted_specificity", "conservation_pct"], ascending=False).kmer:
+    for k in pool.sort_values(["blast_weighted_specificity", "conservation_pct", "kmer"],
+                              ascending=[False, False, True]).kmer:
         if len(picked) >= N_PROBES:
             break
         if k in sets and not words(k) & seen:
@@ -256,7 +258,8 @@ def main():
                     "blast_weighted_offtarget", "blast_specificity",
                     "blast_weighted_specificity", "blast_top_offtarget", "blast_capped"]:
             df[col] = df.kmer.map(lambda k, c=col: blast[t][k][c])
-        df.sort_values(["blast_weighted_specificity", "conservation_pct"], ascending=False).to_csv(
+        df.sort_values(["blast_weighted_specificity", "conservation_pct", "kmer"],
+                       ascending=[False, False, True]).to_csv(
             OUT / "find_runs" / f"{t}_blast_scored.tsv", sep="\t", index=False)
 
         best = None

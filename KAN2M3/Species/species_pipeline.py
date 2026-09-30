@@ -41,7 +41,7 @@ import pandas as pd
 
 from bac_probes.database import iter_silva
 from bac_probes.kmers import extract_kmers, gc_content, reverse_complement
-from bac_probes.database import parse_taxonomy
+from bac_probes.database import is_unnamed_species, parse_taxonomy, taxon_matches
 from bac_probes.specificity import _hit_mismatch_positions, effective_binding_score, run_blast
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -74,20 +74,18 @@ def binomial(name):
     return " ".join(name.split()[:2])
 
 
-AMBIGUOUS_EPITHETS = {"sp.", "sp", "bacterium", "genomosp.", "cf.", "aff.", "oral"}
 
 
 def classify(genus, species_raw, target, target_genus):
-    """'target', 'ambiguous' or 'off' for one SILVA sequence vs one target species."""
-    if binomial(species_raw) == target:
+    """'target', 'ambiguous' or 'off' for one SILVA sequence vs one target species.
+
+    Uses bac-probes' own rules: taxon_matches() (strains/subspecies count as the
+    species) and is_unnamed_species() (same as validate --exclude-unnamed-congeners).
+    """
+    if taxon_matches(species_raw, target, "species"):
         return "target"
-    if genus == target_genus:
-        w = species_raw.split()
-        named = (len(w) >= 2 and w[0][:1].isupper() and w[1][:1].islower()
-                 and w[0].lower() not in ("uncultured", "unidentified", "unclassified", "metagenome")
-                 and w[1] not in AMBIGUOUS_EPITHETS)
-        if not named:
-            return "ambiguous"
+    if genus == target_genus and is_unnamed_species(species_raw):
+        return "ambiguous"
     return "off"
 
 
@@ -143,10 +141,10 @@ def stage1(targets):
     for _acc, tax, seq in iter_silva(SILVA):
         genus, species_raw = tax.get("genus", ""), tax.get(LEVEL, "")
         records.append((genus, species_raw, seq))
-        t = binomial(species_raw)
-        if t in target_seqs:
-            target_seqs[t].append(seq)
-            target_genera.setdefault(t, Counter())[genus] += 1
+        for t in targets:
+            if taxon_matches(species_raw, t, "species"):
+                target_seqs[t].append(seq)
+                target_genera.setdefault(t, Counter())[genus] += 1
     print(f"  {len(records):,} sequences", flush=True)
     # SILVA genus of each target = most common genus among its sequences
     tgenus = {t: target_genera[t].most_common(1)[0][0] if t in target_genera else "" for t in targets}
@@ -192,7 +190,7 @@ def stage1(targets):
                 "exact_precision": round(hits / (hits + ot), 4),
             })
         tables[t] = pd.DataFrame(rows).sort_values(
-            ["exact_precision", "conservation_pct"], ascending=False)
+            ["exact_precision", "conservation_pct", "kmer"], ascending=[False, False, True])
     result = (tables, covers, tgenus, n_ambig)
     CACHE.mkdir(exist_ok=True)
     ck.write_bytes(pickle.dumps(result))
@@ -221,8 +219,10 @@ def distinct(kmers, limit, seen=None):
 
 def blast_pool(df):
     ok = df[df.exact_precision >= MIN_EXACT_PREC]
-    by_cov = distinct(ok.sort_values("conservation_pct", ascending=False).kmer, POOL_HALF)
-    by_prec = distinct(ok.sort_values(["exact_precision", "conservation_pct"], ascending=False).kmer,
+    # every sort ends on the k-mer itself so ties break the same way on every run
+    by_cov = distinct(ok.sort_values(["conservation_pct", "kmer"], ascending=[False, True]).kmer, POOL_HALF)
+    by_prec = distinct(ok.sort_values(["exact_precision", "conservation_pct", "kmer"],
+                                      ascending=[False, False, True]).kmer,
                        POOL_HALF, seen=set().union(*map(words, by_cov)) if by_cov else set())
     return by_cov + by_prec
 
@@ -294,7 +294,7 @@ def greedy(df, cover, n_target, floor):
     spec = dict(zip(pool.kmer, pool.blast_weighted_specificity))
     covered, seen, picked = set(), set(), []
     while len(picked) < N_PROBES and sets:
-        best = max(sets, key=lambda k: (len(sets[k] - covered), spec[k]))
+        best = min(sets, key=lambda k: (-len(sets[k] - covered), -spec[k], k))
         if not sets[best] - covered:
             break
         new = sets.pop(best)
@@ -303,7 +303,8 @@ def greedy(df, cover, n_target, floor):
         picked.append((best, len(new - covered)))
         covered |= new
         seen |= words(best)
-    for k in pool.sort_values(["blast_weighted_specificity", "conservation_pct"], ascending=False).kmer:
+    for k in pool.sort_values(["blast_weighted_specificity", "conservation_pct", "kmer"],
+                              ascending=[False, False, True]).kmer:
         if len(picked) >= N_PROBES:
             break
         if k in sets and not words(k) & seen:
@@ -341,7 +342,8 @@ def main():
                     "blast_weighted_offtarget", "blast_specificity",
                     "blast_weighted_specificity", "blast_top_offtarget", "blast_capped"]:
             df[col] = df.kmer.map(lambda k, c=col: blast[t][k][c])
-        df.sort_values(["blast_weighted_specificity", "conservation_pct"], ascending=False).to_csv(
+        df.sort_values(["blast_weighted_specificity", "conservation_pct", "kmer"],
+                       ascending=[False, False, True]).to_csv(
             OUT / "find_runs" / f"{t.replace(' ', '_')}_blast_scored.tsv", sep="\t", index=False)
 
         best = None
