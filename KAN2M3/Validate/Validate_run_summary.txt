@@ -1,0 +1,287 @@
+KAN2M3 PROBE VALIDATION - RUN SUMMARY
+=====================================
+Date: 2026-09-29
+Input: KAN2M3/Validate/query.csv (35 probes, 7 species, all 40-mers, no header)
+Command:
+  bac-probes validate silva_db/SILVA_138.1_SSURef_NR99_tax_silva_full_align_trunc.fasta.gz \
+      KAN2M3/Validate/query.csv --no-header --blast --threads 14 \
+      --blast-max-target-seqs 50000 --exclude-unnamed-congeners \
+      --output KAN2M3/Validate/validation_results.tsv
+  (--blast-max-target-seqs raised from the default 10,000 so large targets
+   such as E. coli are not truncated; no probe hit the cap.)
+Database: SILVA 138.1 SSURef NR99 (510,508 sequences) + SILVA BLAST database
+BLAST: blastn-short, >= 85% identity over >= 80% of the probe
+
+
+HEADLINE
+--------
+  - No probe exactly matches any non-target SILVA sequence.
+  - Exact coverage is low: 31 of 35 probes exactly match fewer than 5% of
+    their species' sequences. But BLAST finds near-matches (a few
+    mismatches) to nearly all target sequences for most probes, so they
+    probably come from one reference strain, or a variant 16S copy, that
+    differs slightly from most SILVA entries.
+  - Near-match specificity is given two ways (see "Unnamed congeners" below):
+
+    Standard (all non-target hits count as off-target) - worst case:
+      specific (>= 0.95)          14
+      moderate (0.80-0.95)         5
+      low (< 0.80)                 8
+      reaches <10% of targets      8
+
+    Excluding unnamed sequences in the target's genus - best case:
+      specific (>= 0.95)          18
+      moderate (0.80-0.95)         5
+      low (< 0.80)                 4
+      reaches <10% of targets      8
+
+Specific probes per species (probe number in input order, BLAST wspec):
+  Standard:
+  Fusobacterium nucleatum  none
+  Helicobacter pylori      #4 (0.998), #3 (0.996), #6 (0.968), #2 (0.965), #1 (0.958)
+  Prevotella jejuni        #1 (0.983)
+  Escherichia coli         #2 (1.000)
+  Cutibacterium acnes      #4 (1.000), #6 (1.000)
+  Campylobacter jejuni     #1 (0.993), #3 (0.987)
+  Enterobacter hormaechei  #1 (1.000), #5 (1.000), #4 (0.976)
+  Excluding unnamed congeners:
+  Fusobacterium nucleatum  #2 (0.988), #1 (0.959)
+  Helicobacter pylori      #4 (0.999), #3 (0.998), #2 (0.985), #6 (0.977), #1 (0.969)
+  Prevotella jejuni        #1 (0.997)
+  Escherichia coli         #2 (1.000)
+  Cutibacterium acnes      #4 (1.000), #6 (1.000), #5 (0.998), #2 (0.956)
+  Campylobacter jejuni     #1 (0.993), #3 (0.987)
+  Enterobacter hormaechei  #1 (1.000), #5 (1.000), #4 (0.981)
+
+
+CHANGES TO BAC-PROBES MADE FOR THIS RUN
+---------------------------------------
+1. Strains count as the target species (always on)
+   SILVA labels many sequences with a strain or subspecies ("Helicobacter
+   pylori 26695", "Campylobacter jejuni subsp. doylei"). bac-probes used to
+   match species names exactly, so these counted as OFF-target. A species
+   target now matches any SILVA name that starts with it followed by a space
+   (find, coverage, cocktail, validate and BLAST classification).
+   Effect here: all 178 exact off-targets in the first run were strains or
+   subspecies of the target itself; now every probe has 0. Target totals
+   (first run -> now):
+      Fusobacterium nucleatum      30 ->    137
+      Helicobacter pylori         200 ->    338
+      Prevotella jejuni             5 ->      5
+      Escherichia coli          4,007 ->  5,267
+      Cutibacterium acnes          47 ->     79
+      Campylobacter jejuni        246 ->    356
+      Enterobacter hormaechei     123 ->    271
+
+2. Unnamed congeners (new option --exclude-unnamed-congeners)
+   Many BLAST off-targets were "uncultured bacterium". That is SILVA's
+   placeholder for environmental sequences with no species name. When such
+   a sequence sits in the target's own SILVA genus (e.g. "Cutibacterium;
+   uncultured bacterium" for a C. acnes probe), it may well be the target
+   species, so it isn't necessarily a real off-target. Unnamed sequences in
+   OTHER genera, and named sister species, are real off-targets and still
+   count.
+   With the option, validate keeps the standard columns and adds
+   *_excl_unnamed columns with those same-genus unnamed hits set aside.
+   Neither number is exact: the standard value is the worst case, the
+   excl_unnamed value the best case.
+   Probes where this changes BLAST wspec by >= 0.05:
+      Fusobacterium nucleatum #1: 0.463 -> 0.959
+      Fusobacterium nucleatum #2: 0.907 -> 0.988
+      Fusobacterium nucleatum #3: 0.438 -> 0.849
+      Fusobacterium nucleatum #5: 0.286 -> 0.633
+      Escherichia coli #1: 0.636 -> 0.713
+      Cutibacterium acnes #2: 0.327 -> 0.956
+      Cutibacterium acnes #3: 0.167 -> 0.914
+      Cutibacterium acnes #5: 0.828 -> 0.998
+   These are mostly C. acnes and F. nucleatum probes: SILVA has 1,585
+   unnamed Cutibacterium and 850 unnamed Fusobacterium sequences. For
+   H. pylori, C. jejuni and E. hormaechei the change is small, so their
+   remaining off-targets are real (named species or other genera).
+
+
+COLUMNS USED BELOW
+------------------
+  exact cov      = target sequences containing the probe exactly (either strand)
+  exact off      = non-target sequences containing it exactly
+  BLAST tgt      = target sequences BLAST aligns to the probe at >= 85%
+                   identity (near-matches; a rough upper bound on what could
+                   bind), with % of the species' sequences
+  unnamed congener hits = BLAST off-target hits in the target's genus with
+                   no species name
+  BLAST wspec    = blast_weighted_specificity: off-target near-matches weighted
+                   by mismatch position (central mismatches ~ won't bind, end
+                   mismatches ~ may bind). Weighting window = 40 bp.
+  excl. unnamed  = blast_weighted_specificity_excl_unnamed
+Pooled coverage per species can't be computed from validate's output (it
+doesn't report which sequences each probe hits), so it isn't given here.
+
+
+PER-PROBE RESULTS (probes numbered in input order within each species)
+----------------------------------------------------------------------
+  Fusobacterium nucleatum  (target seqs: 137; SILVA genus: Fusobacterium)
+    1. AAAGAATTTGCCTCACAGCTAGGGACAACATTTGGAAACG
+         exact cov    2 ( 1.46%)  exact off 0  BLAST tgt   135 ( 98.5%)  unnamed congener hits   618
+         BLAST wspec 0.463 -> low specificity          excl. unnamed 0.959 -> specific
+    2. GCGTATCCGGATTTATGGGCGTAAAGCGCGTCTAGGTGGT
+         exact cov    3 ( 2.19%)  exact off 0  BLAST tgt   136 ( 99.3%)  unnamed congener hits   778
+         BLAST wspec 0.907 -> moderate                 excl. unnamed 0.988 -> specific
+    3. ATTGCAGGCTCAACTCTGTATTGCGTTGGAAACTGTGTAA
+         exact cov    1 ( 0.73%)  exact off 0  BLAST tgt    75 ( 54.7%)  unnamed congener hits   164
+         BLAST wspec 0.438 -> low specificity          excl. unnamed 0.849 -> moderate
+    4. AGCTCGTGGTCGTGAGATGTTGGGGTAAAGTCCCCGCAAA
+         exact cov    1 ( 0.73%)  exact off 0  BLAST tgt     1 (  0.7%)  unnamed congener hits     2
+         BLAST wspec 1.000 -> reaches <10% of targets  excl. unnamed 1.000 -> reaches <10% of targets
+    5. TAAGTTTGGGGACTCATGCGATACTGCCTGCGATGAGCAG
+         exact cov    1 ( 0.73%)  exact off 0  BLAST tgt   137 (100.0%)  unnamed congener hits   807
+         BLAST wspec 0.286 -> low specificity          excl. unnamed 0.633 -> low specificity
+
+  Helicobacter pylori  (target seqs: 338; SILVA genus: Helicobacter)
+    1. AGAGTGCTGATTAGTGGCGCACGGGTGAGTAACGCATAGG
+         exact cov  106 (31.36%)  exact off 0  BLAST tgt   335 ( 99.1%)  unnamed congener hits    83
+         BLAST wspec 0.958 -> specific                 excl. unnamed 0.969 -> specific
+    2. GCCATTGGAAACGATGATTAATACCAGATACTCCTACGGG
+         exact cov   10 ( 2.96%)  exact off 0  BLAST tgt   334 ( 98.8%)  unnamed congener hits    82
+         BLAST wspec 0.965 -> specific                 excl. unnamed 0.985 -> specific
+    3. TAGGCGGGAATAGTCAGTCAGGTGTGAAATCCTAAGGGCT
+         exact cov    1 ( 0.30%)  exact off 0  BLAST tgt   337 ( 99.7%)  unnamed congener hits    20
+         BLAST wspec 0.996 -> specific                 excl. unnamed 0.998 -> specific
+    4. GGGCTTAGTCCAGTAATGCAGCTAACGCATTAAGCATCCC
+         exact cov    4 ( 1.18%)  exact off 0  BLAST tgt   335 ( 99.1%)  unnamed congener hits    21
+         BLAST wspec 0.998 -> specific                 excl. unnamed 0.999 -> specific
+    5. GTAACTAGCTTGGAGGGCTTAGTCTCTCCAGTAATGCAGC
+         exact cov    1 ( 0.30%)  exact off 0  BLAST tgt     1 (  0.3%)  unnamed congener hits     0
+         BLAST wspec 1.000 -> reaches <10% of targets  excl. unnamed 1.000 -> reaches <10% of targets
+    6. TGCCTCCGTAAGGGGAGGAAGGTGGGGACGACGTCAAGTC
+         exact cov    2 ( 0.59%)  exact off 0  BLAST tgt   338 (100.0%)  unnamed congener hits    69
+         BLAST wspec 0.968 -> specific                 excl. unnamed 0.977 -> specific
+    7. CAAAACATCTCTCAGTTCGGATTGTAGGCTGCAACTCGCC
+         exact cov   15 ( 4.44%)  exact off 0  BLAST tgt   334 ( 98.8%)  unnamed congener hits    83
+         BLAST wspec 0.481 -> low specificity          excl. unnamed 0.492 -> low specificity
+    8. TTGGCTACTGCCCACGGCACACACAGCGACTGGGGTGAAG
+         exact cov  199 (58.88%)  exact off 0  BLAST tgt   333 ( 98.5%)  unnamed congener hits    24
+         BLAST wspec 0.902 -> moderate                 excl. unnamed 0.921 -> moderate
+
+  Prevotella jejuni  (target seqs: 5; SILVA genus: Prevotella_7)
+    1. GGGATGGTGTAATGCAAATTACATCAAATCTTGAAAGCCG
+         exact cov    1 (20.00%)  exact off 0  BLAST tgt     5 (100.0%)  unnamed congener hits   154
+         BLAST wspec 0.983 -> specific                 excl. unnamed 0.997 -> specific
+
+  Escherichia coli  (target seqs: 5,267; SILVA genus: Escherichia-Shigella)
+    1. GGGGAGCTTCGGGCCTCTTGCCATCGGATGTGCCCAGATG
+         exact cov   17 ( 0.32%)  exact off 0  BLAST tgt  5230 ( 99.3%)  unnamed congener hits  1376
+         BLAST wspec 0.636 -> low specificity          excl. unnamed 0.713 -> low specificity
+    2. CAACGAGCGCAACCCTTACTACCTTTGTTGCCAGCGGTCC
+         exact cov    2 ( 0.04%)  exact off 0  BLAST tgt  5236 ( 99.4%)  unnamed congener hits  1305
+         BLAST wspec 1.000 -> specific                 excl. unnamed 1.000 -> specific
+    3. GTCGTAGTCCGGGATTTGGAGTCTGCAACTCGACTCCATT
+         exact cov    3 ( 0.06%)  exact off 0  BLAST tgt     6 (  0.1%)  unnamed congener hits     8
+         BLAST wspec 0.802 -> reaches <10% of targets  excl. unnamed 0.845 -> reaches <10% of targets
+
+  Cutibacterium acnes  (target seqs: 79; SILVA genus: Cutibacterium)
+    1. CGTGCTTACCCATGCAGTCGAACGGAAAGGCCCTGCTTTT
+         exact cov    1 ( 1.27%)  exact off 0  BLAST tgt     1 (  1.3%)  unnamed congener hits    21
+         BLAST wspec 0.608 -> reaches <10% of targets  excl. unnamed 0.608 -> reaches <10% of targets
+    2. GTAAACCGCTTTCGCCTGTGACGAACGTGAGTGACGGTAT
+         exact cov    1 ( 1.27%)  exact off 0  BLAST tgt    75 ( 94.9%)  unnamed congener hits  1334
+         BLAST wspec 0.327 -> low specificity          excl. unnamed 0.956 -> specific
+    3. GTAAGGGCTCGTAGGTGGTTGATCGCGTCGGAGTGTAATC
+         exact cov    2 ( 2.53%)  exact off 0  BLAST tgt    77 ( 97.5%)  unnamed congener hits   971
+         BLAST wspec 0.167 -> low specificity          excl. unnamed 0.914 -> moderate
+    4. TGCTTACGATACGGGTGACATGAGGAAGGTAGGGGAGAAA
+         exact cov    1 ( 1.27%)  exact off 0  BLAST tgt    78 ( 98.7%)  unnamed congener hits  1210
+         BLAST wspec 1.000 -> specific                 excl. unnamed 1.000 -> specific
+    5. GGTCCATTCCACGGGTTCGTGCCGTAGCTAACGCTTTAAG
+         exact cov    4 ( 5.06%)  exact off 0  BLAST tgt    79 (100.0%)  unnamed congener hits  1509
+         BLAST wspec 0.828 -> moderate                 excl. unnamed 0.998 -> specific
+    6. CTCAGAGAATGGGTGTGCCTTCTTTTGGGGTCGGTTCACA
+         exact cov    1 ( 1.27%)  exact off 0  BLAST tgt    76 ( 96.2%)  unnamed congener hits  1329
+         BLAST wspec 1.000 -> specific                 excl. unnamed 1.000 -> specific
+
+  Campylobacter jejuni  (target seqs: 356; SILVA genus: Campylobacter)
+    1. CTGCCCTACACAAGAGGATAACAGTTGGAAACGACTGCTA
+         exact cov    9 ( 2.53%)  exact off 0  BLAST tgt   356 (100.0%)  unnamed congener hits    63
+         BLAST wspec 0.993 -> specific                 excl. unnamed 0.993 -> specific
+    2. GAAACCCTGACGCAGCAATGCCGCGTGGAGGATGACACTT
+         exact cov   12 ( 3.37%)  exact off 0  BLAST tgt   356 (100.0%)  unnamed congener hits   270
+         BLAST wspec 0.902 -> moderate                 excl. unnamed 0.904 -> moderate
+    3. ACACTAGTTGTTGGGGTGCTAGCCATCTCAGTAATGCAGC
+         exact cov   13 ( 3.65%)  exact off 0  BLAST tgt   356 (100.0%)  unnamed congener hits    73
+         BLAST wspec 0.987 -> specific                 excl. unnamed 0.987 -> specific
+    4. TTGGGTTAGTCCCGCAACGAGCGCAACCCACGTATTTAGT
+         exact cov    2 ( 0.56%)  exact off 0  BLAST tgt   355 ( 99.7%)  unnamed congener hits    81
+         BLAST wspec 0.657 -> low specificity          excl. unnamed 0.667 -> low specificity
+    5. GTGAATACGGCGCGCTGTCTTGTACTCACCGCCCGTCACA
+         exact cov    1 ( 0.28%)  exact off 0  BLAST tgt     1 (  0.3%)  unnamed congener hits     0
+         BLAST wspec 1.000 -> reaches <10% of targets  excl. unnamed 1.000 -> reaches <10% of targets
+    6. AAGCGAGGAATACCAAGGCTAGTGACCGTCCACAGTGAAT
+         exact cov    1 ( 0.28%)  exact off 0  BLAST tgt     1 (  0.3%)  unnamed congener hits     0
+         BLAST wspec 1.000 -> reaches <10% of targets  excl. unnamed 1.000 -> reaches <10% of targets
+
+  Enterobacter hormaechei  (target seqs: 271; SILVA genus: Enterobacter)
+    1. TGGGCGCAAAGCATGATGCAGCCCATGCCGCGTGTATGAA
+         exact cov    1 ( 0.37%)  exact off 0  BLAST tgt   261 ( 96.3%)  unnamed congener hits   895
+         BLAST wspec 1.000 -> specific                 excl. unnamed 1.000 -> specific
+    2. ACATGGAGCAGCCTGATGCAGCCATGCGCGTGTATGAGAA
+         exact cov    1 ( 0.37%)  exact off 0  BLAST tgt     1 (  0.4%)  unnamed congener hits     0
+         BLAST wspec 1.000 -> reaches <10% of targets  excl. unnamed 1.000 -> reaches <10% of targets
+    3. ACGGAGGGTGCAAGCGTTAATCCGAATTACTGCGCGTGCA
+         exact cov    1 ( 0.37%)  exact off 0  BLAST tgt   264 ( 97.4%)  unnamed congener hits   851
+         BLAST wspec 0.945 -> moderate                 excl. unnamed 0.945 -> moderate
+    4. CCGCTGGAGCATGTGGATTTAATTCGATGCAACGCGAACA
+         exact cov    1 ( 0.37%)  exact off 0  BLAST tgt   199 ( 73.4%)  unnamed congener hits   545
+         BLAST wspec 0.976 -> specific                 excl. unnamed 0.981 -> specific
+    5. CGCAACGAGCGCAACACTAATCATTTGTTGCCAGCGGTCA
+         exact cov    1 ( 0.37%)  exact off 0  BLAST tgt   265 ( 97.8%)  unnamed congener hits   960
+         BLAST wspec 1.000 -> specific                 excl. unnamed 1.000 -> specific
+    6. ACAATGGCGCACTACAAGAGAGAAGCGAACTCTTCCTCGA
+         exact cov    1 ( 0.37%)  exact off 0  BLAST tgt     2 (  0.7%)  unnamed congener hits    54
+         BLAST wspec 1.000 -> reaches <10% of targets  excl. unnamed 1.000 -> reaches <10% of targets
+
+NOTES BY SPECIES
+----------------
+  Fusobacterium nucleatum - Standard: no probe reaches 0.95 (best #2, 0.907).
+    Excluding unnamed Fusobacterium: #2 (0.988) and #1 (0.959) are specific,
+    #3 moderate (0.849); #5 stays low (0.633) because of named species.
+    Probe 4 matches a single SILVA sequence.
+  Helicobacter pylori - Five probes are specific either way (1, 2, 3, 4, 6;
+    0.958-0.999), each near-matching ~99% of targets. #8 is moderate
+    (0.902 / 0.921; top BLAST off-target H. felis). #7 is low either way
+    (0.48 / 0.49). #5 matches a single sequence.
+  Prevotella jejuni - Single probe, specific (0.983 / 0.997), near-matches
+    all 5 SILVA sequences.
+  Escherichia coli - #2 is specific (1.000) and near-matches 99% of targets
+    but exactly matches only 2. #1 is low either way (0.636 / 0.713; top
+    BLAST off-target Klebsiella pneumoniae). #3 reaches only 6 targets.
+  Cutibacterium acnes - #4 and #6 are specific (1.000) either way. Excluding
+    unnamed Cutibacterium, #2 (0.956) and #5 (0.998) also become specific
+    and #3 moderate (0.914); their standard scores (0.33, 0.83, 0.17) were
+    driven almost entirely by unnamed Cutibacterium. #1 matches a single
+    sequence.
+  Campylobacter jejuni - #1 (0.993) and #3 (0.987) specific; #2 moderate
+    (0.90); #4 low (0.66). Little change without unnamed congeners, so the
+    remaining off-targets are real. #5 and #6 each match only one sequence
+    in all of SILVA.
+  Enterobacter hormaechei - #1 (1.000), #4 (0.976 / 0.981) and #5 (1.000)
+    specific, near-matching 73-98% of targets; #3 moderate (0.945). #2 and #6
+    reach only 1-2 target sequences.
+
+
+SUGGESTED NEXT STEPS
+--------------------
+  - If the probes were designed from a single genome, compare that genome's
+    16S with SILVA: mismatches at the probe positions would explain the low
+    exact coverage.
+  - For probes that reach <10% of targets, confirm the sequence (possible
+    typo, or a region outside SILVA's truncated 16S).
+  - Compare with the probes designed in ../Species, which were chosen for
+    exact coverage and specificity against the same database.
+
+
+FILES
+-----
+  query.csv                 input probes (as supplied)
+  validation_results.tsv    bac-probes validate output, one row per probe,
+                            incl. *_excl_unnamed columns
+  validate.log              run log
+  Validate_run_summary.txt  this summary

@@ -6,5 +6,6 @@ KAN2M3/*.zip
 __pycache__/
 *.py[cod]
 *.tsv
+!KAN2M3/Validate/*.tsv
 .DS_Store
 .venv/
