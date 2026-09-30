@@ -177,6 +177,8 @@ Firmicutes,phylum,GCGTATCCGGATTTATGGGCGTAAAGCGCGTC
 
 Both orientations of each probe are checked (forward and reverse complement), so it does not matter whether you supply the k-mer or its reverse complement.
 
+At species level, SILVA labels many sequences with a strain or subspecies (e.g. `Helicobacter pylori 26695`, `Campylobacter jejuni subsp. doylei`). A species target therefore also matches any SILVA name that starts with it followed by a space, so strains count as target rather than off-target. This applies to `find`, `coverage`, `cocktail`, `validate` and BLAST hit classification. Other levels still require an exact name match.
+
 Add `--blast` to also score near-match off-target binding via BLAST (same position-weighted scoring as `bac-probes find`). When using `--blast` with `validate`, the probe sequence you supply is treated as the full k-mer — its length determines the position-weighting window. Mismatches in BLAST hits are scored by their distance from the centre of your probe sequence: a mismatch at the centre contributes close to 1.0 (high protection against off-target binding), while terminal mismatches contribute close to 0.0 (minimal protection). This means supplying a truncated or padded sequence will shift the weighting incorrectly, so pass the exact probe length you intend to use.
 
 ```bash
@@ -205,6 +207,22 @@ Output columns (exact scoring, always present):
 | `top_offtargets` | Most frequent off-target organism names (exact hits) |
 
 Additional columns added by `--blast` (same definitions as `bac-probes find`): `blast_total_hits`, `blast_target_hits`, `blast_offtarget_hits`, `blast_weighted_offtarget`, `blast_specificity`, `blast_weighted_specificity`, `blast_top_offtarget`, `blast_capped`.
+
+#### Unnamed congeners (`--exclude-unnamed-congeners`)
+
+Many SILVA sequences have no species name — `uncultured bacterium`, `Fusobacterium sp.`, `uncultured Helicobacter sp.` — but are still placed in a genus. For a species-level probe, such sequences in the **target's own genus** may well be the target species, so counting them as off-target can make a probe look much less specific than it is. They often show up as `uncultured bacterium` in `blast_top_offtarget`.
+
+With `--exclude-unnamed-congeners`, species-level rows keep all standard columns and add scores with those sequences set aside. The target genus is the most common SILVA genus among the target's sequences (so *E. coli* → `Escherichia-Shigella`). Unnamed sequences in other genera and named sister species still count as off-target. Treat the standard and `_excl_unnamed` values as worst and best case.
+
+| Column | Description |
+|---|---|
+| `target_genus` | SILVA genus of the target species |
+| `exact_unnamed_congener_hits` | Exact off-target hits that are unnamed and in `target_genus` |
+| `exact_offtarget_excl_unnamed` | `exact_offtarget` without them |
+| `exact_specificity_excl_unnamed` | `exact_specificity` without them (background also excludes them) |
+| `blast_unnamed_congener_hits` | Same for BLAST hits (with `--blast`) |
+| `blast_specificity_excl_unnamed` | `blast_specificity` without them |
+| `blast_weighted_specificity_excl_unnamed` | `blast_weighted_specificity` without them |
 
 ## Key options
 
@@ -248,6 +266,7 @@ Additional columns added by `--blast` (same definitions as `bac-probes find`): `
 | `--blast-identity` | `85.0` | Min % identity for a BLAST hit to count |
 | `--blast-max-target-seqs` | `10000` | BLAST `max_target_seqs` cap |
 | `--threads` | `4` | CPU threads for BLAST |
+| `--exclude-unnamed-congeners` | off | Species level: also report specificity without unnamed sequences in the target's genus (see above) |
 | `--output` | — | Write results to TSV (default: print to stdout only) |
 
 ## Interpreting results

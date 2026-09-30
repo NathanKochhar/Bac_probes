@@ -6,7 +6,7 @@ import tempfile
 from collections import Counter, defaultdict
 from pathlib import Path
 
-from .database import find_blast, parse_taxonomy
+from .database import find_blast, is_unnamed_species, parse_taxonomy, taxon_matches
 
 
 def _kmers_to_fasta(kmers: list[str]) -> str:
@@ -164,9 +164,18 @@ def parse_blast_results(
     target_name: str,
     level: str,
     max_target_seqs: int = 1000,
+    target_genus: str | None = None,
 ) -> dict[str, dict]:
     """
     Parse tabular BLAST output and classify every hit as on-target or off-target.
+
+    If `target_genus` is given (species level), off-target hits in that SILVA
+    genus with no real species name ("uncultured bacterium", "Genus sp.") are
+    also tallied separately, since they may be the target itself. They stay in
+    the standard columns; three extra keys report the scores without them:
+        blast_unnamed_congener_hits             – such hits (raw count)
+        blast_specificity_excl_unnamed          – raw specificity without them
+        blast_weighted_specificity_excl_unnamed – weighted specificity without them
 
     Off-target hits are scored in two ways:
       • Raw count  – every off-target hit counts as 1 (standard specificity).
@@ -185,7 +194,6 @@ def parse_blast_results(
         blast_top_offtarget       – most frequent off-target taxon name
     """
     kmer_index = {f"kmer_{i}": kmer for i, kmer in enumerate(kmers)}
-    target_name_lower = target_name.lower()
 
     data: dict[str, dict] = defaultdict(
         lambda: {
@@ -193,8 +201,11 @@ def parse_blast_results(
             "offtarget_raw": 0,
             "offtarget_weighted": 0.0,
             "offtarget_taxa": Counter(),
+            "unnamed_raw": 0,
+            "unnamed_weighted": 0.0,
         }
     )
+    track_unnamed = bool(target_genus) and level == "species"
 
     for line in blast_output.splitlines():
         if not line.strip():
@@ -211,9 +222,10 @@ def parse_blast_results(
         # stitle from a -parse_seqids BLAST db is the sequence description
         # *after* the accession (i.e. the taxonomy string directly).
         # Do not split on spaces — species names contain spaces.
-        hit_taxon = parse_taxonomy(stitle).get(level, "")
+        hit_tax = parse_taxonomy(stitle)
+        hit_taxon = hit_tax.get(level, "")
 
-        if hit_taxon.lower() == target_name_lower:
+        if taxon_matches(hit_taxon, target_name, level):
             data[kmer]["target"] += 1
         else:
             k = len(kmer)
@@ -226,12 +238,20 @@ def parse_blast_results(
             data[kmer]["offtarget_weighted"] += (1.0 - specificity)  # binding concern = 1 - specificity
             if hit_taxon:
                 data[kmer]["offtarget_taxa"][hit_taxon] += 1
+            if (
+                track_unnamed
+                and hit_tax.get("genus", "") == target_genus
+                and is_unnamed_species(hit_taxon)
+            ):
+                data[kmer]["unnamed_raw"] += 1
+                data[kmer]["unnamed_weighted"] += (1.0 - specificity)
 
     results: dict[str, dict] = {}
     for kmer in kmers:
         entry = data.get(
             kmer,
-            {"target": 0, "offtarget_raw": 0, "offtarget_weighted": 0.0, "offtarget_taxa": Counter()},
+            {"target": 0, "offtarget_raw": 0, "offtarget_weighted": 0.0, "offtarget_taxa": Counter(),
+             "unnamed_raw": 0, "unnamed_weighted": 0.0},
         )
         total_raw = entry["target"] + entry["offtarget_raw"]
         total_weighted = entry["target"] + entry["offtarget_weighted"]
@@ -253,5 +273,15 @@ def parse_blast_results(
             # estimates are unreliable because the result set is truncated.
             "blast_capped": total_raw >= max_target_seqs,
         }
+        if track_unnamed:
+            raw_ex = total_raw - entry["unnamed_raw"]
+            w_ex = total_weighted - entry["unnamed_weighted"]
+            results[kmer].update({
+                "blast_unnamed_congener_hits": entry["unnamed_raw"],
+                "blast_specificity_excl_unnamed":
+                    round(entry["target"] / raw_ex, 6) if raw_ex > 0 else 1.0,
+                "blast_weighted_specificity_excl_unnamed":
+                    round(entry["target"] / w_ex, 6) if w_ex > 0 else 1.0,
+            })
 
     return results

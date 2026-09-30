@@ -11,6 +11,8 @@ from tqdm import tqdm
 
 from .database import (
     TAXONOMY_LEVELS,
+    is_unnamed_species,
+    taxon_matches,
     build_blast_db,
     download_silva,
     iter_silva,
@@ -203,7 +205,6 @@ def find(
     """
     silva_path = Path(silva_fasta)
     blast_db_path = Path(blast_db) if blast_db else Path("silva_db/silva")
-    target_lower = target_name.lower()
 
     # ── Pass 1: collect target sequences ─────────────────────────────────────
     if target_fasta:
@@ -221,7 +222,7 @@ def find(
         click.echo(f"\nCounting background sequences in SILVA …")
         n_bg_pass1 = sum(
             1 for _acc, taxonomy, _seq in tqdm(iter_silva(silva_path), desc="  reading", unit=" seq")
-            if taxonomy.get(level, "").lower() != target_lower
+            if not taxon_matches(taxonomy.get(level, ""), target_name, level)
         )
         click.echo(f"  Background seqs  : {n_bg_pass1:,}")
     else:
@@ -229,7 +230,7 @@ def find(
         target_seqs: list[str] = []
         n_bg_pass1 = 0
         for _acc, taxonomy, seq in tqdm(iter_silva(silva_path), desc="  reading", unit=" seq"):
-            if taxonomy.get(level, "").lower() == target_lower:
+            if taxon_matches(taxonomy.get(level, ""), target_name, level):
                 target_seqs.append(seq)
             else:
                 n_bg_pass1 += 1
@@ -295,7 +296,7 @@ def find(
 
     def _bg_stream():
         for _acc, taxonomy, seq in iter_silva(silva_path):
-            if taxonomy.get(level, "").lower() != target_lower:
+            if not taxon_matches(taxonomy.get(level, ""), target_name, level):
                 yield seq
 
     offtarget_counts, n_bg = score_offtarget_exact(
@@ -491,14 +492,13 @@ def coverage(
     kmer_upper = [k.upper() for k in kmer_list]
 
     # ── Scan SILVA ─────────────────────────────────────────────────────────────
-    target_lower = target_name.lower()
     total: dict[str, int] = {}
     hits: dict[str, dict[str, int]] = {k: {} for k in kmer_upper}
     pool_hits: dict[str, int] = {}
 
     click.echo(f"Scanning SILVA for '{target_name}' at level '{level}' …")
     for _acc, taxonomy, seq in tqdm(iter_silva(Path(silva_fasta)), desc="  reading", unit=" seq"):
-        if taxonomy.get(level, "").lower() != target_lower:
+        if not taxon_matches(taxonomy.get(level, ""), target_name, level):
             continue
         sub = taxonomy.get(breakdown, "") or "unknown"
         total[sub] = total.get(sub, 0) + 1
@@ -629,7 +629,6 @@ def cocktail(
     off-targets are penalised during probe selection.
     """
     silva_path = Path(silva_fasta)
-    target_lower = target_name.lower()
     blast_db_path = Path(blast_db) if blast_db else silva_path.parent / "silva"
 
     # ── Pass 1: collect target sequences ────────────────────────────────────
@@ -637,7 +636,7 @@ def cocktail(
     target_seqs: list[str] = []
     n_bg_pass1 = 0
     for _acc, taxonomy, seq in tqdm(iter_silva(silva_path), desc="  reading", unit=" seq"):
-        if taxonomy.get(level, "").lower() == target_lower:
+        if taxon_matches(taxonomy.get(level, ""), target_name, level):
             target_seqs.append(seq)
         else:
             n_bg_pass1 += 1
@@ -670,7 +669,7 @@ def cocktail(
 
     def _bg_stream():
         for _acc, taxonomy, seq in iter_silva(silva_path):
-            if taxonomy.get(level, "").lower() != target_lower:
+            if not taxon_matches(taxonomy.get(level, ""), target_name, level):
                 yield seq
 
     offtarget_counts, n_bg = score_offtarget_exact(
@@ -848,6 +847,12 @@ def cocktail(
     help="CPU threads for BLAST.",
 )
 @click.option(
+    "--exclude-unnamed-congeners", is_flag=True, default=False,
+    help="Species level only: also report specificity excluding off-target hits in the "
+         "target's SILVA genus that have no species name ('uncultured bacterium', "
+         "'Genus sp.'), which may be the target itself. Adds *_excl_unnamed columns.",
+)
+@click.option(
     "--output", "-o", default=None,
     help="Write results to this TSV path (default: print to stdout only).",
 )
@@ -861,6 +866,7 @@ def validate(
     blast_identity: float,
     blast_max_target_seqs: int,
     threads: int,
+    exclude_unnamed_congeners: bool,
     output: str | None,
 ) -> None:
     """Validate probe sequences against SILVA: report coverage and off-target specificity.
@@ -894,6 +900,18 @@ def validate(
       blast_weighted_specificity – blast_target_hits / (blast_target_hits + blast_weighted_offtarget)
       blast_top_offtarget        – most frequent off-target taxon in BLAST results
       blast_capped               – True if BLAST hit the max_target_seqs limit
+
+    \b
+    Additional columns with --exclude-unnamed-congeners (species-level rows):
+      target_genus                             – SILVA genus of the target (most common
+                                                 genus among its sequences)
+      exact_unnamed_congener_hits              – exact off-target hits in that genus
+                                                 with no species name
+      exact_offtarget_excl_unnamed             – exact_offtarget without them
+      exact_specificity_excl_unnamed           – exact_specificity without them
+      blast_unnamed_congener_hits              – same idea for BLAST hits (with --blast)
+      blast_specificity_excl_unnamed           – blast_specificity without them
+      blast_weighted_specificity_excl_unnamed  – blast_weighted_specificity without them
     """
     silva_path = Path(silva_fasta)
 
@@ -940,6 +958,10 @@ def validate(
                 "bg_offtarget_taxa": [],
                 "target_total":      0,
                 "bg_total":          0,
+                # --exclude-unnamed-congeners bookkeeping (genus → count)
+                "target_genera":     Counter(),
+                "bg_unnamed_genera": Counter(),
+                "bg_unnamed_hit":    [],
             }
             group_order.append(key)
         g = groups[key]
@@ -950,6 +972,14 @@ def validate(
         g["target_hit"].append(0)
         g["bg_hit"].append(0)
         g["bg_offtarget_taxa"].append(Counter())
+        g["bg_unnamed_hit"].append(Counter())
+
+    track_unnamed = exclude_unnamed_congeners and any(lv == "species" for _, lv in groups)
+    if exclude_unnamed_congeners and not track_unnamed:
+        click.echo(
+            "WARNING: --exclude-unnamed-congeners only applies to species-level rows; ignoring.",
+            err=True,
+        )
 
     n_groups = len(groups)
     n_probes_total = len(df_in)
@@ -969,20 +999,32 @@ def validate(
                 break
 
         for key, g in groups.items():
-            taxa_lower, level = key
-            is_target = taxonomy.get(level, "").lower() == taxa_lower
+            level = key[1]
+            is_target = taxon_matches(taxonomy.get(level, ""), g["taxa"], level)
+            unnamed_genus = (
+                taxonomy.get("genus", "")
+                if track_unnamed and level == "species" and not is_target
+                and is_unnamed_species(taxonomy.get("species", ""))
+                else None
+            )
             if is_target:
                 g["target_total"] += 1
+                if track_unnamed:
+                    g["target_genera"][taxonomy.get("genus", "")] += 1
                 for i, (p, prc) in enumerate(zip(g["probes"], g["probes_rc"])):
                     if p in seq or prc in seq:
                         g["target_hit"][i] += 1
             else:
                 g["bg_total"] += 1
+                if unnamed_genus is not None:
+                    g["bg_unnamed_genera"][unnamed_genus] += 1
                 for i, (p, prc) in enumerate(zip(g["probes"], g["probes_rc"])):
                     if p in seq or prc in seq:
                         g["bg_hit"][i] += 1
                         if offtarget_name:
                             g["bg_offtarget_taxa"][i][offtarget_name] += 1
+                        if unnamed_genus is not None:
+                            g["bg_unnamed_hit"][i][unnamed_genus] += 1
 
     # ── Build output rows (in input order) ───────────────────────────────────
     rows_out: list[dict] = []
@@ -1007,7 +1049,7 @@ def validate(
                 f"{name} ({cnt})"
                 for name, cnt in g["bg_offtarget_taxa"][i].most_common(top_offtargets)
             )
-            rows_out.append({
+            row_out = {
                 "taxa":              taxa,
                 "level":             level,
                 "sequence":          orig_seq,
@@ -1019,7 +1061,20 @@ def validate(
                 "exact_bg_seqs":     bg_total,
                 "exact_specificity": exact_spec,
                 "top_offtargets":    top_ot,
-            })
+            }
+            if track_unnamed and level == "species":
+                tg = g["target_genera"].most_common(1)[0][0] if g["target_genera"] else ""
+                g["target_genus"] = tg
+                unnamed_hits = g["bg_unnamed_hit"][i][tg] if tg else 0
+                bg_ex = bg_total - (g["bg_unnamed_genera"][tg] if tg else 0)
+                row_out.update({
+                    "target_genus":                   tg,
+                    "exact_unnamed_congener_hits":    unnamed_hits,
+                    "exact_offtarget_excl_unnamed":   ot - unnamed_hits,
+                    "exact_specificity_excl_unnamed":
+                        round(1.0 - (ot - unnamed_hits) / bg_ex, 6) if bg_ex > 0 else 1.0,
+                })
+            rows_out.append(row_out)
 
     if not rows_out:
         click.echo("No results to report.", err=True)
@@ -1054,6 +1109,7 @@ def validate(
                 blast_scores = parse_blast_results(
                     blast_out, probes, taxa, level,
                     max_target_seqs=blast_max_target_seqs,
+                    target_genus=g.get("target_genus") if track_unnamed else None,
                 )
                 all_blast.update(blast_scores)
 
@@ -1066,7 +1122,11 @@ def validate(
                 ("blast_weighted_specificity", "blast_weighted_specificity"),
                 ("blast_top_offtarget",        "blast_top_offtarget"),
                 ("blast_capped",               "blast_capped"),
-            ]:
+            ] + ([
+                ("blast_unnamed_congener_hits",             "blast_unnamed_congener_hits"),
+                ("blast_specificity_excl_unnamed",          "blast_specificity_excl_unnamed"),
+                ("blast_weighted_specificity_excl_unnamed", "blast_weighted_specificity_excl_unnamed"),
+            ] if track_unnamed else []):
                 default = "" if col == "blast_top_offtarget" else pd.NA
                 df_out[col] = df_out["sequence"].map(
                     lambda s, k=key, d=default: all_blast.get(s, {}).get(k, d)

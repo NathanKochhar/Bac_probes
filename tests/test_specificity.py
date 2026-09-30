@@ -241,3 +241,43 @@ def test_parse_blast_not_capped():
     blast_out = "\n".join(lines)
     results = parse_blast_results(blast_out, [K], "Bacteroides", "genus", max_target_seqs=1000)
     assert results[K]["blast_capped"] is False
+
+
+def test_parse_species_strain_counts_as_target():
+    tax = "Bacteria;Campylobacterota;Campylobacteria;Campylobacterales;Helicobacteraceae;Helicobacter;"
+    blast_out = "\n".join([
+        _make_blast_line("kmer_0", tax + "Helicobacter pylori", 100.0, "32"),
+        _make_blast_line("kmer_0", tax + "Helicobacter pylori 26695", 100.0, "32"),
+        _make_blast_line("kmer_0", tax + "Helicobacter felis", 100.0, "32"),
+    ])
+    r = parse_blast_results(blast_out, [K], "Helicobacter pylori", "species")[K]
+    assert r["blast_target_hits"] == 2
+    assert r["blast_offtarget_hits"] == 1
+    assert r["blast_top_offtarget"] == "Helicobacter felis"
+
+
+def test_parse_species_unnamed_congeners_reported_separately():
+    genus_tax = "Bacteria;Fusobacteriota;Fusobacteriia;Fusobacteriales;Fusobacteriaceae;Fusobacterium;"
+    other_tax = "Bacteria;Firmicutes;Bacilli;Lactobacillales;Lactobacillaceae;Lactobacillus;"
+    blast_out = "\n".join([
+        _make_blast_line("kmer_0", genus_tax + "Fusobacterium nucleatum", 100.0, "32"),
+        _make_blast_line("kmer_0", genus_tax + "uncultured bacterium", 100.0, "32"),
+        _make_blast_line("kmer_0", genus_tax + "Fusobacterium periodonticum", 100.0, "32"),
+        _make_blast_line("kmer_0", other_tax + "uncultured bacterium", 100.0, "32"),
+    ])
+    r = parse_blast_results(blast_out, [K], "Fusobacterium nucleatum", "species",
+                            target_genus="Fusobacterium")[K]
+    # standard columns unchanged: all 3 non-target hits are off-target
+    assert r["blast_offtarget_hits"] == 3
+    assert r["blast_specificity"] == pytest.approx(1 / 4)
+    # only the unnamed hit in the target genus is set aside
+    assert r["blast_unnamed_congener_hits"] == 1
+    assert r["blast_specificity_excl_unnamed"] == pytest.approx(1 / 3)
+    assert r["blast_weighted_specificity_excl_unnamed"] == pytest.approx(1 / 3)
+
+
+def test_parse_no_unnamed_keys_without_target_genus():
+    stitle = "Bacteria;Fusobacteriota;Fusobacteriia;Fusobacteriales;Fusobacteriaceae;Fusobacterium;uncultured bacterium"
+    r = parse_blast_results(_make_blast_line("kmer_0", stitle, 100.0, "32"), [K],
+                            "Fusobacterium nucleatum", "species")[K]
+    assert "blast_unnamed_congener_hits" not in r

@@ -68,6 +68,46 @@ def parse_taxonomy(taxonomy_str: str) -> dict[str, str]:
     return {level: (taxa[i] if i < len(taxa) else "") for i, level in enumerate(TAXONOMY_LEVELS)}
 
 
+def taxon_matches(name: str, target: str, level: str) -> bool:
+    """
+    True if a SILVA taxon name belongs to the target taxon (case-insensitive).
+
+    At species level SILVA labels many sequences with a strain or subspecies
+    ("Helicobacter pylori 26695", "Campylobacter jejuni subsp. doylei"), so a
+    species target also matches any name that starts with it followed by a
+    space. Other levels require an exact match, so e.g. the genus "Clostridium"
+    does not swallow "Clostridium sensu stricto 1".
+    """
+    name, target = name.strip().lower(), target.strip().lower()
+    if not target:
+        return False
+    if name == target:
+        return True
+    return level == "species" and name.startswith(target + " ")
+
+
+_UNNAMED_FIRST_WORDS = {"uncultured", "unidentified", "unclassified", "metagenome", "bacterium"}
+_UNNAMED_EPITHETS = {"sp.", "sp", "bacterium", "cf.", "aff.", "oral", "genomosp."}
+
+
+def is_unnamed_species(name: str) -> bool:
+    """
+    True if a SILVA species field gives no real species name, e.g.
+    "uncultured bacterium", "Fusobacterium sp.", "uncultured Helicobacter sp.",
+    "Fusobacterium sp. oral taxon 203". Such sequences may belong to any
+    species of their SILVA genus, including the target.
+    """
+    w = name.split()
+    if len(w) < 2:
+        return True
+    return (
+        w[0].lower() in _UNNAMED_FIRST_WORDS
+        or not w[0][:1].isupper()
+        or not w[1][:1].islower()
+        or w[1] in _UNNAMED_EPITHETS
+    )
+
+
 # ── FASTA iteration ───────────────────────────────────────────────────────────
 
 def iter_silva(fasta_path: str | Path) -> Iterator[tuple[str, dict[str, str], str]]:

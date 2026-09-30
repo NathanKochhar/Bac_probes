@@ -1,7 +1,7 @@
 """Unit tests for bac_probes.database."""
 
 import pytest
-from bac_probes.database import parse_taxonomy, TAXONOMY_LEVELS
+from bac_probes.database import is_unnamed_species, parse_taxonomy, taxon_matches, TAXONOMY_LEVELS
 
 
 # ── parse_taxonomy ────────────────────────────────────────────────────────────
@@ -57,3 +57,67 @@ def test_taxonomy_levels_order():
     assert TAXONOMY_LEVELS[-1] == "species"
     assert "genus" in TAXONOMY_LEVELS
     assert "phylum" in TAXONOMY_LEVELS
+
+
+# ── taxon_matches ─────────────────────────────────────────────────────────────
+
+def test_taxon_matches_exact_case_insensitive():
+    assert taxon_matches("Helicobacter pylori", "helicobacter pylori", "species")
+
+
+def test_taxon_matches_species_strain():
+    assert taxon_matches("Helicobacter pylori 26695", "Helicobacter pylori", "species")
+
+
+def test_taxon_matches_species_subspecies():
+    assert taxon_matches("Campylobacter jejuni subsp. doylei", "Campylobacter jejuni", "species")
+
+
+def test_taxon_matches_species_rejects_other_species():
+    assert not taxon_matches("Helicobacter felis", "Helicobacter pylori", "species")
+
+
+def test_taxon_matches_species_needs_word_boundary():
+    # "Escherichia colix" is not a strain of "Escherichia coli"
+    assert not taxon_matches("Escherichia colix", "Escherichia coli", "species")
+
+
+def test_taxon_matches_subspecies_target_is_exactish():
+    target = "Enterobacter hormaechei subsp. oharae"
+    assert taxon_matches("Enterobacter hormaechei subsp. oharae ECR091", target, "species")
+    assert not taxon_matches("Enterobacter hormaechei subsp. hoffmannii", target, "species")
+
+
+def test_taxon_matches_genus_is_exact_only():
+    assert taxon_matches("Clostridium", "Clostridium", "genus")
+    assert not taxon_matches("Clostridium sensu stricto 1", "Clostridium", "genus")
+
+
+def test_taxon_matches_empty():
+    assert not taxon_matches("", "Helicobacter pylori", "species")
+    assert not taxon_matches("Helicobacter pylori", "", "species")
+
+
+# ── is_unnamed_species ────────────────────────────────────────────────────────
+
+@pytest.mark.parametrize("name", [
+    "uncultured bacterium",
+    "uncultured Helicobacter sp.",
+    "Fusobacterium sp.",
+    "Fusobacterium sp. oral taxon 203",
+    "unidentified",
+    "metagenome",
+    "",
+])
+def test_is_unnamed_species_true(name):
+    assert is_unnamed_species(name)
+
+
+@pytest.mark.parametrize("name", [
+    "Helicobacter pylori",
+    "Helicobacter pylori 26695",
+    "Campylobacter jejuni subsp. doylei",
+    "Fusobacterium periodonticum",
+])
+def test_is_unnamed_species_false(name):
+    assert not is_unnamed_species(name)
