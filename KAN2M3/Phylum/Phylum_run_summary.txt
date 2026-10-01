@@ -1,85 +1,92 @@
 KAN2M3 PHYLUM PROBE DESIGN - RUN SUMMARY
-========================================
-Date: 2026-09-29
+=======================================
+Run: bac-probes 0.1.0, run 2026-09-30T22:54:23
 Database: SILVA 138.1 SSURef NR99 (510,508 sequences)
-Probe design: 32-mers, GC 35-65%, no homopolymers >= 5, exact matching only (no BLAST)
-Machine: AMD Ryzen 7 9800X3D (8 cores / 16 threads), 31 GB RAM
+Input: KAN2M3/KAN2M3-phylum-silva.csv (SILVA spellings of KAN2M3-phylum.csv)
 
-The "probe" column in every output file is the reverse complement of the k-mer;
-this is the sequence to order for in-situ use.
+Command (exact, from command.txt):
+  bac-probes design silva_db/SILVA_138.1_SSURef_NR99_tax_silva_full_align_trunc.fasta.gz KAN2M3/KAN2M3-phylum-silva.csv --level phylum --min-conservation 0.25 --threads 6 --no-candidates -o KAN2M3/Phylum
 
-
-KEY METRIC: PRECISION
----------------------
-precision = target hits / (target hits + exact off-target hits)
-
-i.e. the fraction of all SILVA sequences carrying the probe that belong to the
-target taxon. Raw off-target counts cannot be compared between a taxon of 11
-sequences and one of 136,000; precision can. Precision 1.0 = zero exact
-off-target matches in SILVA.
+The 'probe' column in every output file is the reverse complement of the
+k-mer; this is the sequence to order for in-situ use.
 
 
-NAME MAPPING (CSV name -> SILVA 138.1 name)
--------------------------------------------
-Phylum CSV uses "NCBI-SILVA" name pairs; the SILVA part was used, except:
-  Campylobacterota-Campilobacterota -> Campylobacterota
-    ("Campilobacterota" is the GTDB spelling; SILVA uses Campylobacterota)
+HEADLINE
+--------
+  - 6 of 6 taxa reach the 50% pooled-coverage goal (54-87% pooled).
+  - Specificity floors used: 1 x1, 0.999 x1, 0.995 x2, 0.99 x2.
+  - 32 probes selected in total; 1 of 6 taxa have zero exact off-targets
+    across all their selected probes.
 
 
-==============================================================================
-PHYLUM  (KAN2M3/Phylum/)
-==============================================================================
-
-Goal: ~10 highly specific probes per phylum, each with ~50% coverage.
-
-Method
-  - Ran `bac-probes find --level phylum -k 32 --min-conservation 0.25 --no-blast`
-    for all 6 phyla in parallel (~22 minutes; >= 17 GB RAM stayed free).
-  - Selected probes with precision >= 0.95.
-  - Stepped a per-probe conservation floor down from 50% (50, 45, ... 25%) and
-    used the highest floor giving 10 probes.
-  - Ranked by precision, then conservation.
-  - Probes sharing a 16-bp stretch count as the same site, so the 10 probes
-    cover different parts of the gene. Two probes can still overlap by up to
-    15 bp.
-
-Results
-  Phylum            Target seqs  Per-probe cons. (mean)  Pooled cov. (10)  Min precision
-  Firmicutes          117,419    27-40% (33%)            85.8%             0.967
-  Proteobacteria      136,158    25-40% (31%)            64.8%             0.986
-  Bacteroidota         46,851    30-45% (36%)            83.4%             0.972
-  Actinobacteriota     39,596    31-40% (35%)            88.3%             0.989
-  Fusobacteriota        1,838    50-68% (59%)            84.3%             0.986
-  Campylobacterota      4,820    31-89% (47%)            97.1%             0.980
-
-Pooled coverage = target sequences hit by at least one of the 10 probes.
-
-Notes
-  - Individual probes mostly land at 30-45% conservation, not 50%. Only
-    Fusobacteriota reached ~50% per probe while staying specific.
-  - For big, diverse phyla there is a trade-off between specificity and
-    per-probe coverage. For Proteobacteria, no 32-mer at >= 50% conservation
-    reaches 90% precision (the best is 0.90). Firmicutes and Bacteroidota have
-    only 1-2 k-mers at that level passing 98% precision, all at the same site.
-    Specificity was kept, and the 10-probe pool provides the coverage (65-97%).
-  - For Firmicutes and Proteobacteria, every k-mer at >= 45% conservation hits
-    > 500 background sequences. Precision is still high because those k-mers
-    also hit 50-70k target sequences.
-
-Files
-  Phylum_summary.csv                one row per phylum
-  Phylum_all_selected_probes.csv    all 60 selected probes
-  selected/<Phylum>_selected_probes.csv
-  find_runs/<Phylum>_find.tsv       full candidate lists from bac-probes find
-  logs/, run_find.sh, summarize.py  to repeat the run
+NAME MAPPING (KAN2M3 name -> SILVA 138.1 name used)
+---------------------------------------------------
+  Bacillota-Firmicutes                 -> Firmicutes
+  Pseudomonadota-Proteobacteria        -> Proteobacteria
+  Bacteroidota-Bacteroidota            -> Bacteroidota
+  Actinomycetota-Actinobacteriota      -> Actinobacteriota
+  Fusobacteriota-Fusobacteriota        -> Fusobacteriota
+  Campylobacterota-Campilobacterota    -> Campylobacterota
+  Outputs use the SILVA names.
 
 
-==============================================================================
+NOTE ON METHOD
+--------------
+  This run aims for 50% POOLED coverage (sequences hit by at least one of the
+  probes), like the other levels. The earlier phylum run (before
+  bac-probes design) instead picked ~10 probes that EACH covered ~50%.
+  Candidates here are k-mers in >= 25% of the phylum's sequences, which
+  keeps memory manageable for phyla with 100,000+ sequences.
+
+
+METHOD
+------
+  bac-probes design (see the command above and every setting in command.txt):
+  - Candidates: 32-mers in >= 25% of the taxon's sequences, GC 35%-65%, no homopolymers >= 5.
+  - Exact off-target counts against all other SILVA sequences.
+  - No BLAST (exact matching only). Selection uses exact_precision: the share
+    of SILVA sequences carrying the probe that belong to the taxon.
+  - Selection: specificity floors 1,0.999,0.995,0.99,0.98,0.95,0.9 tried strict to loose;
+    the strictest whose probe set reaches 50% pooled coverage is used.
+    Up to 10 probes at distinct sites (no shared 16-mer); each pick adds the
+    most not-yet-covered sequences, then spare slots are filled with further
+    specific probes. Ties break on the k-mer sequence, so reruns match.
+
+
+RESULTS (32 probes)
+--------------------
+  Taxon             Target seqs   Floor  Probes   Pooled   Probe cov. range  Min spec  Exact off
+  Firmicutes            117,419    0.99       5    68.8%         28.6-51.8%    0.9913       1567
+  Proteobacteria        136,158   0.995       5    60.0%         25.4-40.6%    0.9960        663
+  Bacteroidota           46,851    0.99       7    81.3%         27.2-45.0%    0.9917        836
+  Actinobacteriota       39,596   0.999       2    53.6%         41.6-45.0%    0.9990         33
+  Fusobacteriota          1,838       1      10    73.3%         25.9-68.3%    1.0000          0
+  Campylobacterota        4,820   0.995       3    86.7%         28.6-74.1%    0.9958         18
+
+  Floor = specificity floor used; Pooled = sequences hit by at least one probe;
+  Probe cov. range = single-probe coverage of the selected probes; Min spec =
+  lowest exact_precision among them; Exact off = exact
+  off-target matches summed over the selected probes.
+
+  Fewer than 10 probes: Firmicutes (5), Proteobacteria (5), Bacteroidota (7), Actinobacteriota (2), Campylobacterota (3).
+  Only that many distinct sites passed the floor that reached the goal; a
+  looser floor would allow more probes but less specific ones.
+
+
+FILES
+-----
+  design_summary.csv          one row per taxon (columns explained in the README)
+  all_selected_probes.csv     every selected probe
+  selected/<taxon>_selected_probes.csv   per-taxon probes in pick order, with
+                              new_seqs_covered and cumulative_coverage_pct
+  command.txt                 exact command, bac-probes version, date, all settings
+  design.log                  run log
+  Phylum_run_summary.txt     this summary
+
+
 CAVEATS
-==============================================================================
-  - No BLAST was run. "Zero off-targets" means no EXACT 32-bp match in SILVA.
-    Probes that nearly match another taxon with 1-2 mismatches, especially
-    near the probe ends, could still bind. To check the final lists:
-      bac-probes validate <silva.fasta.gz> <probes.csv> --blast
-  - Coverage and specificity are measured against SILVA 138.1 only. Taxa
-    under-represented in SILVA may behave differently in real samples.
+-------
+  - No BLAST: probes with no EXACT off-target match may still have 1-2
+    mismatch near-matches. Check with: bac-probes validate ... --blast
+  - Coverage and specificity are measured against SILVA 138.1 only; taxa that
+    are under-represented or mislabelled in SILVA may behave differently.

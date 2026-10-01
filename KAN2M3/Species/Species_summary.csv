@@ -1,8 +1,0 @@
-taxa,silva_genus,target_seqs,ambiguous_seqs_excluded,candidates_found,candidates_blasted,blast_spec_floor_used,probes_selected,pooled_coverage_pct,conservation_min_pct,conservation_max_pct,blast_weighted_spec_min,blast_weighted_spec_mean,exact_precision_min,exact_offtarget_total,blast_offtarget_hits_total,probes_blast_capped,top_offtarget_species
-Fusobacterium nucleatum,Fusobacterium,137,850,2334,34,0.95,7,50.36,2.19,20.44,0.951068,0.9828,0.9032,5.0,16056.0,0,Fusobacterium periodonticum (5); uncultured bacterium (2)
-Helicobacter pylori,Helicobacter,338,125,1896,45,0.999,7,85.21,2.37,66.27,0.999848,1.0,1.0,0.0,2114.0,0,Campylobacter jejuni (2); Helicobacter heilmannii (2); Helicobacter cinaedi (1)
-Prevotella jejuni,Prevotella_7,5,466,1556,7,0.999,0,0.0,,,,,,,,0,
-Escherichia coli,Escherichia-Shigella,5267,1529,1731,4,0.9,1,3.28,3.28,3.28,0.921671,0.9217,0.9558,8.0,36513.0,0,Salmonella enterica (1)
-Cutibacterium acnes,Cutibacterium,79,1585,1596,10,0.95,1,2.53,2.53,2.53,0.972646,0.9726,1.0,0.0,58.0,0,Acidipropionibacterium acidipropionici (1)
-Campylobacter jejuni,Campylobacter,356,274,1568,7,0.999,0,0.0,,,,,,,,0,
-Enterobacter hormaechei,Enterobacter,271,997,1551,0,0.999,0,0.0,,,,,,,,0,

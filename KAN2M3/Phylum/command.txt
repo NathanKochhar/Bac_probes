@@ -1,0 +1,27 @@
+# bac-probes 0.1.0, run 2026-09-30T22:54:23
+bac-probes design silva_db/SILVA_138.1_SSURef_NR99_tax_silva_full_align_trunc.fasta.gz KAN2M3/KAN2M3-phylum-silva.csv --level phylum --min-conservation 0.25 --threads 6 --no-candidates -o KAN2M3/Phylum
+
+# resolved settings
+level = phylum
+min_conservation = 0.25
+threads = 6
+write_candidates = False
+output_dir = KAN2M3/Phylum
+silva_fasta = silva_db/SILVA_138.1_SSURef_NR99_tax_silva_full_align_trunc.fasta.gz
+target = KAN2M3/KAN2M3-phylum-silva.csv
+target_fasta = None
+kmer_size = 32
+gc_min = 0.35
+gc_max = 0.65
+max_homopolymer = 5
+merge_overlapping = False
+exclude_unnamed_congeners = False
+use_blast = False
+blast_db = None
+blast_identity = 85.0
+blast_max_target_seqs = 50000
+blast_pool_size = 120
+do_select = True
+n_probes = 10
+pool_target = 0.5
+spec_floors = 1,0.999,0.995,0.99,0.98,0.95,0.9

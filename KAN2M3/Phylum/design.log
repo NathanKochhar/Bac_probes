@@ -1,0 +1,30 @@
+
+Designing probes for 6 taxon/taxa. Pass 1/2 — reading SILVA …
+
+Scoring 32-mers (conservation ≥ 25%) …
+  Firmicutes: 117,419 seqs, 280 candidates
+  Proteobacteria: 136,158 seqs, 356 candidates
+  Bacteroidota: 46,851 seqs, 225 candidates
+  Actinobacteriota: 39,596 seqs, 417 candidates
+  Fusobacteriota: 1,838 seqs, 864 candidates
+  Campylobacterota: 4,820 seqs, 468 candidates
+
+Pass 2/2 — exact off-target scan …
+
+Selecting probes …
+  Firmicutes: floor 0.99 → 5 probes, pooled 68.8%
+  Proteobacteria: floor 0.995 → 5 probes, pooled 60.0%
+  Bacteroidota: floor 0.99 → 7 probes, pooled 81.3%
+  Actinobacteriota: floor 0.999 → 2 probes, pooled 53.6%
+  Fusobacteriota: floor 1.0 → 10 probes, pooled 73.3%
+  Campylobacterota: floor 0.995 → 3 probes, pooled 86.7%
+
+            taxa  target_seqs  spec_floor_used  probes_selected  pooled_coverage_pct  goal_reached
+      Firmicutes       117419            0.990                5                68.82          True
+  Proteobacteria       136158            0.995                5                59.98          True
+    Bacteroidota        46851            0.990                7                81.32          True
+Actinobacteriota        39596            0.999                2                53.56          True
+  Fusobacteriota         1838            1.000               10                73.34          True
+Campylobacterota         4820            0.995                3                86.66          True
+
+Results written to KAN2M3\Phylum/

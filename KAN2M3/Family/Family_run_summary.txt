@@ -1,158 +1,123 @@
-KAN2M3 FAMILY PROBE DESIGN - RUN SUMMARY (WITH BLAST)
-=====================================================
-Date: 2026-09-29 (rerun 2026-09-30)
+KAN2M3 FAMILY PROBE DESIGN - RUN SUMMARY
+=======================================
+Run: bac-probes 0.1.0, run 2026-10-01T00:31:47
 Database: SILVA 138.1 SSURef NR99 (510,508 sequences) + SILVA BLAST database
-Probe design: 32-mers, GC 35-65%, no homopolymers >= 5
-BLAST: blastn-short, >= 85% identity, max_target_seqs 50,000
-Machine: AMD Ryzen 7 9800X3D (8 cores / 16 threads), 31 GB RAM
+Input: KAN2M3/KAN2M3-family.csv (all names match SILVA)
 
-The "probe" column in every output file is the reverse complement of the k-mer;
-this is the sequence to order for in-situ use.
+Command (exact, from command.txt):
+  bac-probes design silva_db/SILVA_138.1_SSURef_NR99_tax_silva_full_align_trunc.fasta.gz KAN2M3/KAN2M3-family.csv --level family --blast --threads 14 --no-candidates -o KAN2M3/Family
 
-
-KEY METRICS
------------
-exact_precision = target hits / (target hits + exact off-target hits)
-    Fraction of SILVA sequences carrying the exact 32-mer that belong to the
-    family. 1.0 = zero exact off-target matches.
-
-blast_weighted_specificity (used for selection)
-    = BLAST target hits / (target hits + weighted off-target hits)
-    Every off-target BLAST hit (>= 85% identity, i.e. up to ~4 mismatches) is
-    weighted by how likely it is to still bind:
-      - exact match -> weight 1 (will bind)
-      - mismatches near the probe centre -> weight ~0 (won't bind)
-      - mismatches near the probe ends -> weight near 1 (may still bind)
-    So this captures near-miss cross-reactivity that exact matching misses.
-
-blast_offtarget_hits (raw) is large for every probe (thousands) because 16S is
-highly conserved and 85% identity admits hits with several mismatches. Almost
-all of these carry centrally placed mismatches and contribute ~0 to the
-weighted score; use the weighted specificity, not the raw count.
+The 'probe' column in every output file is the reverse complement of the
+k-mer; this is the sequence to order for in-situ use.
 
 
-NAME MAPPING
-------------
-All 25 family names in KAN2M3-family.csv match SILVA 138.1 exactly.
-
-
-GOAL
-----
-~10 highly specific probes per family with POOLED coverage of ~50%.
-Individual probes may have low coverage if they are very specific.
+HEADLINE
+--------
+  - 25 of 25 taxa reach the 50% pooled-coverage goal (52-91% pooled).
+  - Specificity floors used: 1 x6, 0.999 x4, 0.995 x11, 0.99 x2, 0.98 x2.
+  - 249 probes selected in total; 7 of 25 taxa have zero exact off-targets
+    across all their selected probes.
 
 
 METHOD
 ------
-family_pipeline.py reuses the bac_probes library (same k-mer filters, exact
-off-target counting and BLAST scoring as `bac-probes find --blast`), but reads
-SILVA once for all 25 families instead of 50 full passes.
-
-Stage 1 - exact (~12 min, 14 threads)
-  - Candidates: k-mers present in >= 2% of the family's sequences.
+  bac-probes design (see the command above and every setting in command.txt):
+  - Candidates: 32-mers in >= 2% of the taxon's sequences, GC 35%-65%, no homopolymers >= 5.
   - Exact off-target counts against all other SILVA sequences.
-
-Stage 2 - BLAST (~45 min originally, 2,713 queries, ~1.3 s each)
-  - BLASTing every candidate (3,000-11,000 per family) is not feasible, so
-    each family BLASTs a pool of up to 120 candidates at distinct sites
-    (no two share a 16-bp stretch): up to 60 chosen for coverage and 60 for
-    exact precision, all with exact precision >= 0.90.
-
-Selection
-  - Specificity floors tried from strict to loose on blast_weighted_specificity:
-    0.999, 0.995, 0.99, 0.98, 0.95, 0.90. The strictest floor whose
-    10-probe pool reaches 50% pooled coverage is used.
-  - Greedy: each pick adds the most not-yet-covered target sequences; probes
-    sharing a 16-bp stretch are skipped.
-  - Top-up: if coverage saturates before 10 probes, the remaining slots are
-    filled with extra non-overlapping probes at the same floor.
+  - BLAST (>= 85.0% identity) on up to 120 candidates per taxon at distinct sites,
+    half chosen for coverage and half for exact specificity. Selection uses
+    blast_weighted_specificity: off-target near-matches weighted by where
+    their mismatches fall (central mismatches ~ won't bind).
+  - Selection: specificity floors 1,0.999,0.995,0.99,0.98,0.95,0.9 tried strict to loose;
+    the strictest whose probe set reaches 50% pooled coverage is used.
+    Up to 10 probes at distinct sites (no shared 16-mer); each pick adds the
+    most not-yet-covered sequences, then spare slots are filled with further
+    specific probes. Ties break on the k-mer sequence, so reruns match.
 
 
-RERUN NOTES (2026-09-30)
-------------------------
-The family run was repeated after a reproducibility bug was found in the
-species run. When candidate k-mers tied on coverage or specificity, the tie
-was broken by the order Python happened to hold them in memory, which is
-randomised on each run, so repeat runs could pick different probes.
-  - Fixed by breaking every tie on the k-mer sequence. Two runs with
-    different hash seeds now give byte-identical output.
-  - The exact-match stage and most BLAST results were reused from cache;
-    only new pool candidates were BLASTed.
-  - Overall results are essentially unchanged: all 25 families still reach
-    50% with 249 probes. The specific probes chosen differ in 24 families
-    (they were tied choices). Notable shifts: Moraxellaceae 0.995 -> 0.999
-    floor (90% -> 52% pooled), Bacteroidaceae 0.999 -> 0.995 (54% -> 72%),
-    Rikenellaceae 0.99 -> 0.98 (53% -> 63%).
-  - The strain fix in bac-probes doesn't affect family-level matching.
+RESULTS (249 probes)
+---------------------
+  Taxon                 Target seqs   Floor  Probes   Pooled   Probe cov. range  Min spec  Exact off
+  Staphylococcaceae           6,637   0.995      10    89.7%          2.6-46.4%    0.9954        119
+  Streptococcaceae            7,739   0.999      10    79.8%          2.4-31.1%    0.9990         16
+  Enterococcaceae             2,134   0.995       9    58.6%          2.1-41.9%    0.9976          3
+  Lactobacillaceae            6,372   0.999      10    56.7%          3.5-18.7%    0.9991          0
+  Clostridiaceae              3,662   0.995      10    72.3%          2.1-30.4%    0.9951         31
+  Lachnospiraceae            23,099    0.98      10    78.0%          2.5-48.1%    0.9815       1008
+  Ruminococcaceae             5,904    0.99      10    52.9%          2.0-27.3%    0.9904         97
+  Enterobacteriaceae         20,869   0.995      10    75.0%          2.4-33.7%    0.9974        107
+  Pseudomonadaceae            9,419   0.995      10    84.7%          5.0-28.7%    0.9957         59
+  Moraxellaceae               4,720   0.999      10    52.3%          2.1-18.5%    0.9991          7
+  Neisseriaceae               1,795   0.999      10    74.0%          2.3-33.8%    0.9993          3
+  Bacteroidaceae              3,747   0.995      10    72.3%          3.7-18.5%    0.9956         20
+  Prevotellaceae              5,132   0.995      10    53.6%          2.3-19.7%    0.9955         11
+  Porphyromonadaceae            717       1      10    81.7%          3.2-48.5%    1.0000          0
+  Tannerellaceae                676    0.99      10    56.5%          2.5-18.2%    0.9903          4
+  Rikenellaceae               2,864    0.98      10    62.9%          2.3-12.4%    0.9803         36
+  Propionibacteriaceae        2,495   0.995      10    76.9%          2.0-46.4%    0.9954         21
+  Corynebacteriaceae          3,781   0.995      10    82.2%          2.2-46.2%    0.9962         21
+  Actinomycetaceae              967   0.995      10    72.1%          2.8-33.0%    0.9954          2
+  Bifidobacteriaceae            773       1      10    85.5%          2.3-67.1%    1.0000          0
+  Micrococcaceae              3,153   0.995      10    66.7%          2.6-33.3%    0.9954         31
+  Fusobacteriaceae            1,348       1      10    66.3%          2.0-46.7%    1.0000          0
+  Leptotrichiaceae              490       1      10    83.1%          4.3-55.9%    1.0000          0
+  Campylobacteraceae          1,035       1      10    91.4%          2.3-68.3%    1.0000          0
+  Helicobacteraceae             686       1      10    85.3%          3.9-54.7%    1.0000          0
 
+  Floor = specificity floor used; Pooled = sequences hit by at least one probe;
+  Probe cov. range = single-probe coverage of the selected probes; Min spec =
+  lowest blast_weighted_specificity among them; Exact off = exact
+  off-target matches summed over the selected probes.
 
-RESULTS (249 probes total)
---------------------------
-  Family                Target seqs  BLAST floor  Probes  Pooled cov.  Min exact precision  Main off-target family
-  Staphylococcaceae       6,637     0.995       10       89.7%        0.974                Bacillaceae
-  Streptococcaceae        7,739     0.999       10       79.8%        0.996                Lactobacillaceae
-  Enterococcaceae         2,134     0.995        9       58.6%        0.997                (scattered)
-  Lactobacillaceae        6,372     0.999       10       56.7%        1.000                Bacillaceae
-  Clostridiaceae          3,662     0.995       10       72.3%        0.975                (scattered)
-  Lachnospiraceae        23,099     0.98        10       78.0%        0.918                Ruminococcaceae
-  Ruminococcaceae         5,904     0.99        10       52.9%        0.915                Oscillospiraceae
-  Enterobacteriaceae     20,869     0.995       10       75.0%        0.985                Erwiniaceae
-  Pseudomonadaceae        9,419     0.995       10       84.7%        0.991                (scattered)
-  Moraxellaceae           4,720     0.999       10       52.3%        0.991                Pseudomonadaceae
-  Neisseriaceae           1,795     0.999       10       74.0%        0.976                (scattered)
-  Bacteroidaceae          3,747     0.995       10       72.3%        0.985                (scattered)
-  Prevotellaceae          5,132     0.995       10       53.6%        0.994                Bacteroidaceae
-  Porphyromonadaceae        717     0.999       10       83.1%        1.000                Bacteroidaceae
-  Tannerellaceae            676     0.99        10       56.5%        0.941                (scattered)
-  Rikenellaceae           2,864     0.98        10       62.9%        0.951                Prevotellaceae
-  Propionibacteriaceae    2,495     0.995       10       76.9%        0.986                Nocardioidaceae
-  Corynebacteriaceae      3,781     0.995       10       82.2%        0.988                (scattered)
-  Actinomycetaceae          967     0.995       10       72.1%        0.983                Microbacteriaceae
-  Bifidobacteriaceae        773     0.999       10       86.4%        1.000                (scattered)
-  Micrococcaceae          3,153     0.995       10       66.7%        0.945                Streptomycetaceae
-  Fusobacteriaceae        1,348     0.999       10       90.1%        1.000                (scattered)
-  Leptotrichiaceae          490     0.999       10       83.1%        1.000                Fusobacteriaceae
-  Campylobacteraceae      1,035     0.999       10       94.8%        1.000                Sulfurimonadaceae
-  Helicobacteraceae         686     0.999       10       85.3%        1.000                (scattered)
+  Fewer than 10 probes: Enterococcaceae (9).
+  Only that many distinct sites passed the floor that reached the goal; a
+  looser floor would allow more probes but less specific ones.
 
-"Main off-target family" = the family most often named as the top BLAST
-off-target across the selected probes, when it is the top off-target for at
-least 3 probes; "(scattered)" = no family dominates. Full detail is in the
-top_offtarget_families column of Family_summary.csv.
-
-Summary
-  - All 25 families reach the ~50% pooled-coverage goal (52-95%).
-  - Every pool has BLAST weighted specificity >= 0.98; 23 of 25 are >= 0.99
-    and 10 are >= 0.999.
-  - 7 families have zero exact off-targets across all selected probes.
-  - No selected probe hit the BLAST max_target_seqs cap, so the BLAST
-    specificity estimates are not truncated.
-  - Enterococcaceae has 9 probes, not 10: no further non-overlapping probe
-    passed the 0.995 floor.
-  - Weakest pools: Lachnospiraceae, Rikenellaceae (floor 0.98) and
-    Ruminococcaceae, Tannerellaceae (floor 0.99).
-    These sit in crowded lineages (Lachnospirales/Oscillospirales,
-    Bacteroidales); their main cross-reactors are sister families.
-  - Moraxellaceae now uses the strictest floor (0.999) and covers 52%. In
-    the earlier run its 0.995 pool covered 90%, so wider coverage is
-    available if the last bit of specificity matters less.
+Main BLAST off-targets (taxon most often the top off-target of a selected probe):
+  Staphylococcaceae     Bacillaceae (6); Planococcaceae (2); Lactobacillaceae (1)
+  Streptococcaceae      Lactobacillaceae (4); Lachnospiraceae (2); Paenibacillaceae (1)
+  Enterococcaceae       Bacillaceae (2); Vagococcaceae (2); Carnobacteriaceae (1)
+  Lactobacillaceae      Bacillaceae (3); Streptococcaceae (2); Staphylococcaceae (2)
+  Clostridiaceae        Enterobacteriaceae (2); Caloramatoraceae (1); Acetobacteraceae (1)
+  Lachnospiraceae       Ruminococcaceae (4); Corynebacteriaceae (2); Lactobacillaceae (1)
+  Ruminococcaceae       Oscillospiraceae (4); [Eubacterium] coprostanoligenes group (3); Lachnospiraceae (2)
+  Enterobacteriaceae    Erwiniaceae (5); Pasteurellaceae (2); Yersiniaceae (1)
+  Pseudomonadaceae      Enterobacteriaceae (2); Vibrionaceae (1); Pectobacteriaceae (1)
+  Moraxellaceae         Pseudomonadaceae (3); Streptomycetaceae (1); Legionellaceae (1)
+  Neisseriaceae         Oxalobacteraceae (2); Burkholderiaceae (2); Hydrogenophilaceae (1)
+  Bacteroidaceae        Ruminococcaceae (2); Lachnospiraceae (2); Vibrionaceae (1)
+  Prevotellaceae        Bacteroidaceae (3); Ruminococcaceae (2); Solirubrobacteraceae (1)
+  Porphyromonadaceae    Bacteroidaceae (2); Sphingobacteriaceae (1); Paludibacteraceae (1)
+  Tannerellaceae        Muribaculaceae (2); Bacteroidaceae (1); Prolixibacteraceae (1)
+  Rikenellaceae         Prevotellaceae (4); Flavobacteriaceae (2); SB-5 (1)
+  Propionibacteriaceae  Nocardioidaceae (4); Corynebacteriaceae (2); Rubrobacteriaceae (1)
+  Corynebacteriaceae    Streptomycetaceae (2); Mycobacteriaceae (2); Pseudonocardiaceae (1)
+  Actinomycetaceae      Microbacteriaceae (3); Micrococcaceae (2); Lachnospiraceae (2)
+  Bifidobacteriaceae    Cytophagaceae (2); Micrococcaceae (1); Flavobacteriaceae (1)
+  Micrococcaceae        Streptomycetaceae (3); Mycobacteriaceae (2); Microbacteriaceae (1)
+  Fusobacteriaceae      Anaerolineaceae (2); Lachnospiraceae (2); Oscillospiraceae (1)
+  Leptotrichiaceae      Fusobacteriaceae (3); Bryobacteraceae (1); Moraxellaceae (1)
+  Campylobacteraceae    Sulfurovaceae (2); Sulfurospirillaceae (2); Sulfurimonadaceae (2)
+  Helicobacteraceae     Sulfurovaceae (2); Chlamydiaceae (1); Campylobacteraceae (1)
 
 
 FILES
 -----
-  Family_summary.csv                one row per family
-  Family_all_selected_probes.csv    all selected probes
-  selected/<Family>_selected_probes.csv
-      per-family selections with exact and BLAST columns, new_seqs_covered,
-      cumulative_coverage_pct, blast_top_offtarget, blast_capped
-  family_pipeline.py, family_pipeline.log   to repeat the run
-  (find_runs/ and cache/ are kept locally but not pushed to GitHub:
-   full candidate tables, BLAST-scored pools and resumable checkpoints)
+  design_summary.csv          one row per taxon (columns explained in the README)
+  all_selected_probes.csv     every selected probe
+  selected/<taxon>_selected_probes.csv   per-taxon probes in pick order, with
+                              new_seqs_covered and cumulative_coverage_pct
+  command.txt                 exact command, bac-probes version, date, all settings
+  design.log                  run log
+  Family_run_summary.txt     this summary
 
 
 CAVEATS
 -------
-  - Only the BLAST pool (up to 120 candidates per family) was BLAST-scored.
-    Other candidates could exist that were never considered.
-  - Specificity is measured against SILVA 138.1 only. Taxa under-represented
-    in SILVA may behave differently in real samples.
+  - Only up to 120 candidates per taxon were BLASTed; others were not
+    considered for selection.
+  - No selected probe hit the BLAST max_target_seqs cap. The cap warnings in
+    design.log refer to other BLASTed candidates (very universal k-mers)
+    that were not selected.
+  - Coverage and specificity are measured against SILVA 138.1 only; taxa that
+    are under-represented or mislabelled in SILVA may behave differently.

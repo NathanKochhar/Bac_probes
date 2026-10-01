@@ -1,0 +1,114 @@
+
+Designing probes for 25 taxon/taxa. Pass 1/2 — reading SILVA …
+
+Scoring 32-mers (conservation ≥ 2%) …
+  Staphylococcaceae: 6,637 seqs, 3,203 candidates
+  Streptococcaceae: 7,739 seqs, 5,731 candidates
+  Enterococcaceae: 2,134 seqs, 2,795 candidates
+  Lactobacillaceae: 6,372 seqs, 11,117 candidates
+  Clostridiaceae: 3,662 seqs, 7,316 candidates
+  Lachnospiraceae: 23,099 seqs, 5,366 candidates
+  Ruminococcaceae: 5,904 seqs, 6,504 candidates
+  Enterobacteriaceae: 20,869 seqs, 3,026 candidates
+  Pseudomonadaceae: 9,419 seqs, 3,778 candidates
+  Moraxellaceae: 4,720 seqs, 5,869 candidates
+  Neisseriaceae: 1,795 seqs, 4,502 candidates
+  Bacteroidaceae: 3,747 seqs, 6,778 candidates
+  Prevotellaceae: 5,132 seqs, 5,841 candidates
+  Porphyromonadaceae: 717 seqs, 7,022 candidates
+  Tannerellaceae: 676 seqs, 5,831 candidates
+  Rikenellaceae: 2,864 seqs, 6,981 candidates
+  Propionibacteriaceae: 2,495 seqs, 4,566 candidates
+  Corynebacteriaceae: 3,781 seqs, 6,671 candidates
+  Actinomycetaceae: 967 seqs, 6,253 candidates
+  Bifidobacteriaceae: 773 seqs, 4,716 candidates
+  Micrococcaceae: 3,153 seqs, 4,917 candidates
+  Fusobacteriaceae: 1,348 seqs, 5,620 candidates
+  Leptotrichiaceae: 490 seqs, 8,145 candidates
+  Campylobacteraceae: 1,035 seqs, 5,750 candidates
+  Helicobacteraceae: 686 seqs, 5,151 candidates
+
+Pass 2/2 — exact off-target scan …
+
+BLAST (identity ≥ 85%, max_target_seqs 50000) …
+  Staphylococcaceae: 72 BLASTed (5 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Streptococcaceae: 120 BLASTed (4 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Enterococcaceae: 50 BLASTed (1 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Lactobacillaceae: 120 BLASTed (7 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Clostridiaceae: 120 BLASTed (2 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Lachnospiraceae: 113 BLASTed (9 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Ruminococcaceae: 91 BLASTed (3 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Enterobacteriaceae: 57 BLASTed (4 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Pseudomonadaceae: 90 BLASTed (5 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Moraxellaceae: 120 BLASTed (7 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Neisseriaceae: 107 BLASTed (2 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Bacteroidaceae: 120 BLASTed (1 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Prevotellaceae: 120 BLASTed (1 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Porphyromonadaceae: 120 BLASTed
+  Tannerellaceae: 120 BLASTed
+  Rikenellaceae: 120 BLASTed (3 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Propionibacteriaceae: 117 BLASTed (4 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Corynebacteriaceae: 120 BLASTed (1 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Actinomycetaceae: 120 BLASTed (1 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Bifidobacteriaceae: 120 BLASTed (3 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Micrococcaceae: 96 BLASTed (2 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Fusobacteriaceae: 120 BLASTed (6 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Leptotrichiaceae: 120 BLASTed (3 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Campylobacteraceae: 120 BLASTed (1 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Helicobacteraceae: 120 BLASTed (3 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+
+Selecting probes …
+  Staphylococcaceae: floor 0.995 → 10 probes, pooled 89.7%
+  Streptococcaceae: floor 0.999 → 10 probes, pooled 79.8%
+  Enterococcaceae: floor 0.995 → 9 probes, pooled 58.6%
+  Lactobacillaceae: floor 0.999 → 10 probes, pooled 56.7%
+  Clostridiaceae: floor 0.995 → 10 probes, pooled 72.3%
+  Lachnospiraceae: floor 0.98 → 10 probes, pooled 78.0%
+  Ruminococcaceae: floor 0.99 → 10 probes, pooled 52.9%
+  Enterobacteriaceae: floor 0.995 → 10 probes, pooled 75.0%
+  Pseudomonadaceae: floor 0.995 → 10 probes, pooled 84.7%
+  Moraxellaceae: floor 0.999 → 10 probes, pooled 52.3%
+  Neisseriaceae: floor 0.999 → 10 probes, pooled 74.0%
+  Bacteroidaceae: floor 0.995 → 10 probes, pooled 72.3%
+  Prevotellaceae: floor 0.995 → 10 probes, pooled 53.6%
+  Porphyromonadaceae: floor 1.0 → 10 probes, pooled 81.7%
+  Tannerellaceae: floor 0.99 → 10 probes, pooled 56.5%
+  Rikenellaceae: floor 0.98 → 10 probes, pooled 62.9%
+  Propionibacteriaceae: floor 0.995 → 10 probes, pooled 76.9%
+  Corynebacteriaceae: floor 0.995 → 10 probes, pooled 82.2%
+  Actinomycetaceae: floor 0.995 → 10 probes, pooled 72.1%
+  Bifidobacteriaceae: floor 1.0 → 10 probes, pooled 85.5%
+  Micrococcaceae: floor 0.995 → 10 probes, pooled 66.7%
+  Fusobacteriaceae: floor 1.0 → 10 probes, pooled 66.3%
+  Leptotrichiaceae: floor 1.0 → 10 probes, pooled 83.1%
+  Campylobacteraceae: floor 1.0 → 10 probes, pooled 91.4%
+  Helicobacteraceae: floor 1.0 → 10 probes, pooled 85.3%
+
+                taxa  target_seqs  spec_floor_used  probes_selected  pooled_coverage_pct  goal_reached
+   Staphylococcaceae         6637            0.995               10                89.74          True
+    Streptococcaceae         7739            0.999               10                79.75          True
+     Enterococcaceae         2134            0.995                9                58.62          True
+    Lactobacillaceae         6372            0.999               10                56.73          True
+      Clostridiaceae         3662            0.995               10                72.31          True
+     Lachnospiraceae        23099            0.980               10                78.04          True
+     Ruminococcaceae         5904            0.990               10                52.91          True
+  Enterobacteriaceae        20869            0.995               10                74.95          True
+    Pseudomonadaceae         9419            0.995               10                84.66          True
+       Moraxellaceae         4720            0.999               10                52.29          True
+       Neisseriaceae         1795            0.999               10                74.04          True
+      Bacteroidaceae         3747            0.995               10                72.30          True
+      Prevotellaceae         5132            0.995               10                53.62          True
+  Porphyromonadaceae          717            1.000               10                81.73          True
+      Tannerellaceae          676            0.990               10                56.51          True
+       Rikenellaceae         2864            0.980               10                62.92          True
+Propionibacteriaceae         2495            0.995               10                76.87          True
+  Corynebacteriaceae         3781            0.995               10                82.20          True
+    Actinomycetaceae          967            0.995               10                72.08          True
+  Bifidobacteriaceae          773            1.000               10                85.51          True
+      Micrococcaceae         3153            0.995               10                66.67          True
+    Fusobacteriaceae         1348            1.000               10                66.32          True
+    Leptotrichiaceae          490            1.000               10                83.06          True
+  Campylobacteraceae         1035            1.000               10                91.40          True
+   Helicobacteraceae          686            1.000               10                85.28          True
+
+Results written to KAN2M3\Family/

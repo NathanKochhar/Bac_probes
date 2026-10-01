@@ -1,0 +1,8 @@
+taxa,level,target_seqs,candidates_found,candidates_considered,spec_metric,spec_floor_used,probes_selected,pooled_coverage_pct,goal_reached,conservation_min_pct,conservation_max_pct,spec_min,spec_mean,exact_offtarget_total,silva_genus,ambiguous_seqs_excluded,probes_blast_capped,top_offtargets
+Fusobacterium nucleatum,species,137,2334,34,blast_weighted_specificity_excl_unnamed,0.95,7,50.36,True,2.19,20.44,0.951068,0.9828,260.0,Fusobacterium,850,0.0,uncultured bacterium (7)
+Helicobacter pylori,species,338,1896,45,blast_weighted_specificity_excl_unnamed,1.0,5,82.25,True,2.37,66.27,1.0,1.0,4.0,Helicobacter,125,0.0,Campylobacter jejuni (2); Helicobacter bilis (1); Helicobacter sp. 'liver 3' (1)
+Prevotella jejuni,species,5,1556,7,blast_weighted_specificity_excl_unnamed,,0,0.0,False,,,,,,Prevotella_7,466,,
+Escherichia coli,species,5267,1731,4,blast_weighted_specificity_excl_unnamed,0.9,1,3.28,False,3.28,3.28,0.921671,0.9217,9.0,Escherichia-Shigella,1529,0.0,uncultured bacterium (1)
+Cutibacterium acnes,species,79,1596,10,blast_weighted_specificity_excl_unnamed,0.95,1,2.53,False,2.53,2.53,0.972646,0.9726,1.0,Cutibacterium,1585,0.0,uncultured bacterium (1)
+Campylobacter jejuni,species,356,1568,7,blast_weighted_specificity_excl_unnamed,,0,0.0,False,,,,,,Campylobacter,274,,
+Enterobacter hormaechei,species,271,1551,0,blast_weighted_specificity_excl_unnamed,,0,0.0,False,,,,,,Enterobacter,997,,

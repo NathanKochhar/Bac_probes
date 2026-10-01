@@ -1,0 +1,7 @@
+taxa,level,target_seqs,candidates_found,candidates_considered,spec_metric,spec_floor_used,probes_selected,pooled_coverage_pct,goal_reached,conservation_min_pct,conservation_max_pct,spec_min,spec_mean,exact_offtarget_total
+Firmicutes,phylum,117419,280,91,exact_precision,0.99,5,68.82,True,28.64,51.75,0.9913,0.9934,1567
+Proteobacteria,phylum,136158,356,148,exact_precision,0.995,5,59.98,True,25.42,40.62,0.996,0.9971,663
+Bacteroidota,phylum,46851,225,169,exact_precision,0.99,7,81.32,True,27.17,44.99,0.9917,0.9936,836
+Actinobacteriota,phylum,39596,417,172,exact_precision,0.999,2,53.56,True,41.59,45.0,0.999,0.999,33
+Fusobacteriota,phylum,1838,864,561,exact_precision,1.0,10,73.34,True,25.95,68.34,1.0,1.0,0
+Campylobacterota,phylum,4820,468,164,exact_precision,0.995,3,86.66,True,28.61,74.13,0.9958,0.9969,18

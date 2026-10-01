@@ -1,194 +1,120 @@
-KAN2M3 SPECIES PROBE DESIGN - RUN SUMMARY (WITH BLAST)
-======================================================
-Date: 2026-09-29
+KAN2M3 SPECIES PROBE DESIGN - RUN SUMMARY
+========================================
+Run: bac-probes 0.1.0, run 2026-10-01T00:40:26
 Database: SILVA 138.1 SSURef NR99 (510,508 sequences) + SILVA BLAST database
-Probe design: 32-mers, GC 35-65%, no homopolymers >= 5
-BLAST: blastn-short, >= 85% identity, max_target_seqs 50,000
-Machine: AMD Ryzen 7 9800X3D (8 cores / 16 threads), 31 GB RAM
+Input: KAN2M3/KAN2M3-species.csv (all names match SILVA)
 
-The "probe" column in every output file is the reverse complement of the k-mer;
-this is the sequence to order for in-situ use.
+Command (exact, from command.txt):
+  bac-probes design silva_db/SILVA_138.1_SSURef_NR99_tax_silva_full_align_trunc.fasta.gz KAN2M3/KAN2M3-species.csv --level species --blast --exclude-unnamed-congeners --threads 14 --no-candidates -o KAN2M3/Species
+
+The 'probe' column in every output file is the reverse complement of the
+k-mer; this is the sequence to order for in-situ use.
 
 
 HEADLINE
 --------
-Only 2 of 7 species reach the ~50% pooled-coverage goal with highly specific
-probes: Helicobacter pylori (85.2%) and Fusobacterium nucleatum (50.4%).
-E. coli and C. acnes get 1 probe each (3.3%, 2.5%). C. jejuni, E. hormaechei
-and P. jejuni get none: their 16S sequences are too close to named sister
-species for any 32-mer to be specific. This is a known limit of 16S rRNA at
-species level, not a parameter problem.
+  - 2 of 7 taxa reach the 50% pooled-coverage goal (0-82% pooled).
+  - Specificity floors used: 1 x1, 0.95 x2, 0.9 x1.
+  - 14 probes selected in total; 2 of 7 taxa have zero exact off-targets
+    across all their selected probes.
+  - Not reached: Prevotella jejuni (0.0%), Escherichia coli (3.3%), Cutibacterium acnes (2.5%), Campylobacter jejuni (0.0%), Enterobacter hormaechei (0.0%).
 
 
-KEY METRICS
------------
-exact_precision = target hits / (target hits + exact off-target hits)
-
-blast_weighted_specificity (used for selection)
-    = BLAST target hits / (target hits + weighted off-target hits)
-    Each off-target BLAST hit (>= 85% identity) is weighted by how likely it
-    is to still bind: an exact match counts fully; mismatches near the probe
-    centre count ~0 (won't bind); mismatches near the ends count nearly fully.
-
-
-SPECIES DEFINITION IN SILVA (important)
----------------------------------------
-SILVA's species field is the raw organism name, so it was handled as follows.
-The pipeline uses bac-probes' own helpers for this (taxon_matches and
-is_unnamed_species in bac_probes/database.py), so it follows exactly the same
-rules as `bac-probes validate --exclude-unnamed-congeners`.
-
-1. Strains and subspecies count as the species (the bac-probes "strain fix"):
-   "Escherichia coli O157:H7" and "Enterobacter hormaechei subsp. oharae"
-   are target for E. coli and E. hormaechei respectively.
-
-2. Every SILVA sequence is classified relative to each target species:
-     target    - labelled with the target species
-     ambiguous - same SILVA genus as the target but no real species name
-                 ("Fusobacterium sp.", "uncultured bacterium",
-                  "uncultured Helicobacter sp." ...). These could be the target
-                 itself, so they are EXCLUDED from both target and off-target
-                 counts.
-     off       - everything else, including every NAMED sister species
-                 (e.g. Shigella, Campylobacter coli, Fusobacterium periodonticum).
-   The same rule is used for exact counting and for BLAST hit classification.
-
-   A first run without the "ambiguous" class counted unnamed same-genus
-   sequences as off-target. That made almost every probe look non-specific
-   (the top "off-target" was usually "uncultured bacterium"), so the run was
-   repeated with this rule.
-
-  Species                  SILVA genus            Target seqs  Ambiguous excluded
-  Fusobacterium nucleatum  Fusobacterium                137        850
-  Helicobacter pylori      Helicobacter                 338        125
-  Prevotella jejuni        Prevotella_7                   5        466
-  Escherichia coli         Escherichia-Shigella       5,267      1,529
-  Cutibacterium acnes      Cutibacterium                 79      1,585
-  Campylobacter jejuni     Campylobacter                356        274
-  Enterobacter hormaechei  Enterobacter                 271        997
-
-
-GOAL
-----
-~10 highly specific probes per species with POOLED coverage of ~50%.
-Individual probes may have low coverage if they are very specific.
+WHY MOST SPECIES FALL SHORT
+---------------------------
+  These are limits of 16S rRNA at species level, not of the settings:
+  - Escherichia coli: indistinguishable from Shigella by 16S, and very close
+    to Salmonella; one probe passes, covering 3.3%.
+  - Campylobacter jejuni: near-identical 16S to C. coli; none of the 7 BLASTed
+    candidates reaches 0.90 (the earlier species run found the best at 0.896).
+  - Enterobacter hormaechei: member of the E. cloacae complex, which shares
+    nearly identical 16S; no candidate is specific even by exact matching.
+  - Prevotella jejuni: only 5 SILVA sequences; near-matches in sister
+    species (P. denticola) outweigh them.
+  - Cutibacterium acnes: only 79 sequences carry the species name while
+    1,585 Cutibacterium sequences have none, so few k-mers look
+    acnes-specific; real coverage may be higher than SILVA can show.
+  For these, genus- or family-level probes (../Genus, ../Family) or a
+  non-16S marker gene (e.g. rpoB, gyrB) are the practical options.
 
 
 METHOD
 ------
-species_pipeline.py is the family pipeline adapted for species (same k-mer
-filters, exact counting and position-weighted BLAST scoring as bac-probes).
-
-  - Stage 1 (exact): candidates are k-mers present in >= 2% of the species'
-    sequences, with exact off-target counts across SILVA.
-  - Stage 2 (BLAST): up to 120 candidates per species at distinct sites
-    (no shared 16-bp stretch) with exact precision >= 0.90. Only 107 qualified
-    in total (0 for E. hormaechei).
-  - Selection: floors tried on blast_weighted_specificity from strict to loose
-    (0.999, 0.995, 0.99, 0.98, 0.95, 0.90). The strictest floor whose pool
-    reaches 50% pooled coverage is used. Greedy picks maximise new target
-    sequences covered, then extra non-overlapping probes at the same floor fill
-    remaining slots, up to 10.
-  - Ties (equal coverage or specificity) are always broken by the k-mer
-    sequence, so the run is reproducible (see RERUN NOTES).
-  - The whole run took ~10 minutes.
-
-
-RERUN NOTES (2026-09-29)
-------------------------
-The run was repeated after the strain fix was added to bac-probes, with the
-pipeline switched to the bac-probes helpers above.
-  - Target and ambiguous counts were identical to the earlier run for all
-    7 species, confirming the earlier run already merged strains correctly.
-  - The selected probes changed, though. That exposed a reproducibility bug:
-    when k-mers tied on coverage or specificity, the tie was broken by the
-    order Python happened to hold them in memory, which is randomised on each
-    run. With small species pools this changed which candidates were
-    BLASTed and selected.
-  - Fixed by breaking every tie on the k-mer sequence. Two runs with
-    different hash seeds now give byte-identical output. The results below
-    are from the fixed pipeline and replace the earlier ones (earlier:
-    H. pylori 6 probes / 86.7%, F. nucleatum 8 / 55.5%, C. acnes 2 / 7.6%,
-    E. coli 0). The conclusions are unchanged.
-  - The family pipeline (../Family) has the same tie-breaking code and was
-    not rerun; its results could shift slightly the same way if rerun.
+  bac-probes design (see the command above and every setting in command.txt):
+  - Candidates: 32-mers in >= 2% of the taxon's sequences, GC 35%-65%, no homopolymers >= 5.
+  - Exact off-target counts against all other SILVA sequences.
+  - BLAST (>= 85.0% identity) on up to 120 candidates per taxon at distinct sites,
+    half chosen for coverage and half for exact specificity. Selection uses
+    blast_weighted_specificity: off-target near-matches weighted by where
+    their mismatches fall (central mismatches ~ won't bind).
+  - --exclude-unnamed-congeners: unnamed sequences in the target's SILVA genus
+    ('uncultured bacterium', 'Genus sp.') are not counted as off-target when
+    selecting; they may be the target species itself. Strains and
+    subspecies always count as the species.
+  - Selection: specificity floors 1,0.999,0.995,0.99,0.98,0.95,0.9 tried strict to loose;
+    the strictest whose probe set reaches 50% pooled coverage is used.
+    Up to 10 probes at distinct sites (no shared 16-mer); each pick adds the
+    most not-yet-covered sequences, then spare slots are filled with further
+    specific probes. Ties break on the k-mer sequence, so reruns match.
 
 
-RESULTS (16 probes total)
--------------------------
-  Species                  Floor   Probes  Pooled cov.  Min BLAST spec.  Main off-targets
-  Helicobacter pylori      0.999    7      85.2%        0.9998           H. heilmannii, C. jejuni, H. cinaedi
-  Fusobacterium nucleatum  0.95     7      50.4%        0.951            Fusobacterium periodonticum
-  Escherichia coli         0.90     1       3.3%  *     0.922            Salmonella enterica
-  Cutibacterium acnes      0.95     1       2.5%  *     0.973            Acidipropionibacterium acidipropionici
-  Campylobacter jejuni     -        0       0%    *     -                Campylobacter coli
-  Enterobacter hormaechei  -        0       0%    *     -                (not BLASTed)
-  Prevotella jejuni        -        0       0%    *     -                Prevotella denticola
-  * = pooled-coverage goal not reached
+RESULTS (14 probes)
+--------------------
+  Taxon                    Target seqs   Floor  Probes   Pooled   Probe cov. range  Min spec  Exact off
+  Fusobacterium nucleatum          137    0.95       7    50.4%          2.2-20.4%    0.9511          5
+  Helicobacter pylori              338       1       5    82.2%          2.4-66.3%    1.0000          0
+  Prevotella jejuni                  5       -       0     0.0%                  -         -          -  *
+  Escherichia coli               5,267     0.9       1     3.3%           3.3-3.3%    0.9217          8  *
+  Cutibacterium acnes               79    0.95       1     2.5%           2.5-2.5%    0.9726          0  *
+  Campylobacter jejuni             356       -       0     0.0%                  -         -          -  *
+  Enterobacter hormaechei          271       -       0     0.0%                  -         -          -  *
 
-H. pylori has 7 probes because no further non-overlapping probes passed the
-0.999 floor. All 7 have zero exact off-targets; the first probe alone covers
-66% of H. pylori sequences.
+  Floor = specificity floor used; Pooled = sequences hit by at least one probe;
+  Probe cov. range = single-probe coverage of the selected probes; Min spec =
+  lowest blast_weighted_specificity (excl. unnamed congeners) among them; Exact off = exact
+  off-target matches summed over the selected probes (excl. unnamed congeners).  * = goal not reached.
 
-F. nucleatum needed the 0.95 floor. Its main cross-reactor is F. periodonticum,
-a close oral relative; 4 of the 7 probes have zero exact off-targets.
+  Fewer than 10 probes: Fusobacterium nucleatum (7), Helicobacter pylori (5), Escherichia coli (1), Cutibacterium acnes (1).
+  Only that many distinct sites passed the floor that reached the goal; a
+  looser floor would allow more probes but less specific ones.
 
+  No probes: Prevotella jejuni, Campylobacter jejuni, Enterobacter hormaechei - no candidate passed even the loosest floor.
 
-WHY THE OTHER SPECIES FAILED
-----------------------------
-  Escherichia coli
-    E. coli is known to be indistinguishable from Shigella by 16S, and
-    Salmonella is very close. One probe passes 0.90 (0.922) but covers only
-    3.3% of E. coli sequences. The best broader candidate is 0.898 weighted
-    specificity at 35% coverage, just under the floor; top off-target
-    Salmonella enterica for both.
+Main BLAST off-targets (taxon most often the top off-target of a selected probe):
+  Fusobacterium nucleatum  uncultured bacterium (7)
+  Helicobacter pylori      Campylobacter jejuni (2); Helicobacter bilis (1); Helicobacter sp. 'liver 3' (1)
+  Escherichia coli         uncultured bacterium (1)
+  Cutibacterium acnes      uncultured bacterium (1)
 
-  Campylobacter jejuni
-    Near-identical 16S to C. coli. Best candidates: 0.896 and 0.869 weighted
-    specificity, just below the 0.90 floor.
-
-  Enterobacter hormaechei
-    Member of the E. cloacae complex, whose species are known to share
-    nearly identical 16S. No k-mer reached even 0.90 exact precision (best 0.67), so
-    nothing was BLASTed.
-
-  Prevotella jejuni
-    Only 5 sequences in SILVA. Near-miss hits in sister species (top:
-    P. denticola) outweigh its 5 target hits; the best k-mer reaches only
-    0.62 weighted specificity.
-
-  Cutibacterium acnes
-    Only 79 sequences are named C. acnes, while 1,585 Cutibacterium sequences
-    have no species name. Few k-mers look acnes-specific, and those that do
-    cover only 2-5% each; one passes (0.973). Many of the 1,585 unnamed
-    sequences are probably C. acnes, so real coverage may be higher than
-    2.5%, but SILVA can't confirm it.
-
-The best near-miss candidates for every species are in
-find_runs/<Species>_blast_scored.tsv (local only) if you want to accept lower
-specificity for any of them.
-
-Options for these species if species-level detection is required:
-  - Accept genus- or family-level probes (see ../Genus and ../Family).
-  - Use a non-16S marker gene (e.g. rpoB, gyrB, groEL) or species-specific
-    genes, where sister species differ far more.
+Species definition (SILVA genus; unnamed same-genus sequences set aside):
+  Fusobacterium nucleatum  Fusobacterium            850 set aside
+  Helicobacter pylori      Helicobacter             125 set aside
+  Prevotella jejuni        Prevotella_7             466 set aside
+  Escherichia coli         Escherichia-Shigella   1,529 set aside
+  Cutibacterium acnes      Cutibacterium          1,585 set aside
+  Campylobacter jejuni     Campylobacter            274 set aside
+  Enterobacter hormaechei  Enterobacter             997 set aside
 
 
 FILES
 -----
-  Species_summary.csv               one row per species, incl. SILVA genus,
-                                    ambiguous sequences excluded and top off-targets
-  Species_all_selected_probes.csv   all 16 selected probes
-  selected/<Species>_selected_probes.csv
-      per-species selections (empty file for species with no probes), with
-      exact and BLAST columns incl. blast_ambiguous_hits
-  species_pipeline.py, species_pipeline.log   to repeat the run
-  (find_runs/ and cache/ are kept locally but not pushed to GitHub)
+  design_summary.csv          one row per taxon (columns explained in the README)
+  all_selected_probes.csv     every selected probe
+  selected/<taxon>_selected_probes.csv   per-taxon probes in pick order, with
+                              new_seqs_covered and cumulative_coverage_pct
+  command.txt                 exact command, bac-probes version, date, all settings
+  design.log                  run log
+  Species_run_summary.txt     this summary
 
 
 CAVEATS
 -------
-  - Species labels in SILVA are incomplete and sometimes wrong; results depend
-    on them more than at any other level.
-  - Only the BLAST pool (up to 120 candidates per species) was BLAST-scored.
-  - Specificity is measured against SILVA 138.1 only.
+  - Only up to 120 candidates per taxon were BLASTed; others were not
+    considered for selection.
+  - No selected probe hit the BLAST max_target_seqs cap. The cap warnings in
+    design.log refer to other BLASTed candidates (very universal k-mers)
+    that were not selected.
+  - Coverage and specificity are measured against SILVA 138.1 only; taxa that
+    are under-represented or mislabelled in SILVA may behave differently.
+  - Species labels in SILVA are incomplete; results depend on them more than
+    at any other level.
