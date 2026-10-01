@@ -1,7 +1,7 @@
-taxa,level,target_seqs,candidates_found,candidates_considered,spec_metric,spec_floor_used,probes_selected,pooled_coverage_pct,goal_reached,conservation_min_pct,conservation_max_pct,spec_min,spec_mean,exact_offtarget_total
-Firmicutes,phylum,117419,280,91,exact_precision,0.99,5,68.82,True,28.64,51.75,0.9913,0.9934,1567
-Proteobacteria,phylum,136158,356,148,exact_precision,0.995,5,59.98,True,25.42,40.62,0.996,0.9971,663
-Bacteroidota,phylum,46851,225,169,exact_precision,0.99,7,81.32,True,27.17,44.99,0.9917,0.9936,836
-Actinobacteriota,phylum,39596,417,172,exact_precision,0.999,2,53.56,True,41.59,45.0,0.999,0.999,33
-Fusobacteriota,phylum,1838,864,561,exact_precision,1.0,10,73.34,True,25.95,68.34,1.0,1.0,0
-Campylobacterota,phylum,4820,468,164,exact_precision,0.995,3,86.66,True,28.61,74.13,0.9958,0.9969,18
+taxa,level,target_seqs,candidates_found,candidates_considered,spec_metric,spec_floor_used,probes_selected,pooled_coverage_pct,goal_reached,conservation_min_pct,conservation_max_pct,spec_min,spec_mean,exact_offtarget_total,probes_blast_capped,top_offtargets
+Firmicutes,phylum,117419,1064,47,blast_weighted_specificity,0.995,9,54.83,True,10.14,16.48,0.995287,0.9982,443,0,Proteobacteria (5); Actinobacteriota (2); Bacteroidota (1)
+Proteobacteria,phylum,136158,1491,66,blast_weighted_specificity,0.995,10,56.37,True,10.01,22.96,0.99512,0.9985,421,0,Firmicutes (6); Actinobacteriota (2); Campylobacterota (1)
+Bacteroidota,phylum,46851,742,32,blast_weighted_specificity,0.99,9,61.38,True,10.0,39.84,0.990742,0.9948,666,0,Proteobacteria (5); Planctomycetota (2); Firmicutes (1)
+Actinobacteriota,phylum,39596,1417,50,blast_weighted_specificity,0.995,8,74.88,True,10.36,33.51,0.99635,0.9985,223,0,Firmicutes (4); Proteobacteria (3); Cyanobacteria (1)
+Fusobacteriota,phylum,1838,2108,77,blast_weighted_specificity,1.0,8,85.36,True,10.94,43.36,1.0,1.0,0,0,Proteobacteria (5); Firmicutes (2); Planctomycetota (1)
+Campylobacterota,phylum,4820,2230,81,blast_weighted_specificity,0.999,10,64.42,True,11.12,23.22,0.999008,0.9996,5,0,Firmicutes (5); Bacteroidota (3); Patescibacteria (1)
