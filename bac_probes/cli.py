@@ -39,7 +39,7 @@ from .design import (
     selection_pool,
 )
 from .kmers import reverse_complement
-from .specificity import parse_blast_results, run_blast
+from .specificity import blast_batch_size, parse_blast_results, run_blast
 
 
 @click.group(context_settings={"help_option_names": ["-h", "--help"]})
@@ -353,14 +353,16 @@ def design(
                 continue
             pool = blast_pool(df, metric_exact[i], min_floor, blast_pool_size)
             scores: dict[str, dict] = {}
-            for j in range(0, len(pool), 20):
-                chunk = pool[j:j + 20]
+            batch = blast_batch_size(blast_max_target_seqs)
+            for j in range(0, len(pool), batch):
+                chunk = pool[j:j + batch]
                 raw = run_blast(chunk, blast_db_path, threads=threads,
                                 perc_identity=blast_identity, max_target_seqs=blast_max_target_seqs)
                 scores.update(parse_blast_results(
                     raw, chunk, t.name, t.level, max_target_seqs=blast_max_target_seqs,
                     target_genus=t.genus if t.exclude_unnamed else None,
                 ))
+                del raw
             cols = blast_cols + (["blast_unnamed_congener_hits", "blast_specificity_excl_unnamed",
                                   "blast_weighted_specificity_excl_unnamed"] if t.exclude_unnamed else [])
             for col in cols:
@@ -776,16 +778,19 @@ def validate(
                 taxa, level = g["taxa"], g["level"]
                 probes = g["orig_seqs"]
                 click.echo(f"\nBLASTing {len(probes)} probe(s) for '{taxa}' …")
-                blast_out = run_blast(
-                    probes, blast_db_path, threads=threads,
-                    perc_identity=blast_identity, max_target_seqs=blast_max_target_seqs,
-                )
-                blast_scores = parse_blast_results(
-                    blast_out, probes, taxa, level,
-                    max_target_seqs=blast_max_target_seqs,
-                    target_genus=g.get("target_genus") if track_unnamed else None,
-                )
-                all_blast.update(blast_scores)
+                batch = blast_batch_size(blast_max_target_seqs)
+                for j in range(0, len(probes), batch):
+                    chunk = probes[j:j + batch]
+                    blast_out = run_blast(
+                        chunk, blast_db_path, threads=threads,
+                        perc_identity=blast_identity, max_target_seqs=blast_max_target_seqs,
+                    )
+                    all_blast.update(parse_blast_results(
+                        blast_out, chunk, taxa, level,
+                        max_target_seqs=blast_max_target_seqs,
+                        target_genus=g.get("target_genus") if track_unnamed else None,
+                    ))
+                    del blast_out
 
             for col, key in [
                 ("blast_total_hits",           "blast_total_hits"),

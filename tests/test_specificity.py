@@ -6,6 +6,7 @@ from bac_probes.specificity import (
     _parse_btop,
     _hit_mismatch_positions,
     effective_binding_score,
+    blast_batch_size,
     parse_blast_results,
 )
 
@@ -281,3 +282,16 @@ def test_parse_no_unnamed_keys_without_target_genus():
     r = parse_blast_results(_make_blast_line("kmer_0", stitle, 100.0, "32"), [K],
                             "Fusobacterium nucleatum", "species")[K]
     assert "blast_unnamed_congener_hits" not in r
+
+
+# ── blast_batch_size ──────────────────────────────────────────────────────────
+
+def test_blast_batch_size_default_caps_unchanged():
+    assert blast_batch_size(1000) == 20
+    assert blast_batch_size(50000) == 20
+
+
+def test_blast_batch_size_shrinks_with_large_caps():
+    assert blast_batch_size(200_000) == 10
+    assert blast_batch_size(500_000) == 4
+    assert blast_batch_size(5_000_000) == 1

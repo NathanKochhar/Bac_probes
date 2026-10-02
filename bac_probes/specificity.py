@@ -107,6 +107,16 @@ def effective_binding_score(mismatch_positions: list[int], k: int) -> float:
 
 # ── BLAST interface ───────────────────────────────────────────────────────────
 
+def blast_batch_size(max_target_seqs: int, budget: int = 2_000_000, largest: int = 20) -> int:
+    """
+    How many queries to send to BLAST at once. BLAST keeps up to
+    max_target_seqs hits per query in memory, and all of a batch's hits come
+    back as one output string, so the batch shrinks as the cap grows:
+    20 queries up to a 100,000-hit cap, 10 at 200,000, 4 at 500,000.
+    """
+    return max(1, min(largest, budget // max(1, max_target_seqs)))
+
+
 def run_blast(
     kmers: list[str],
     blast_db: str | Path,
