@@ -1,0 +1,27 @@
+# bac-probes 0.1.0, run 2026-10-02T14:40:06
+bac-probes design silva_db/SILVA_138.1_SSURef_NR99_tax_silva_full_align_trunc.fasta.gz Bacteria --level domain --min-conservation 0.05 --n-probes 15 --pool-target 0.97 --blast --blast-pool 40 --blast-max-target-seqs 500000 --threads 14 --no-candidates -o KAN2M3/Bacteria
+
+# resolved settings
+level = domain
+min_conservation = 0.05
+n_probes = 15
+pool_target = 0.97
+use_blast = True
+blast_pool_size = 40
+blast_max_target_seqs = 500000
+threads = 14
+write_candidates = False
+output_dir = KAN2M3/Bacteria
+silva_fasta = silva_db/SILVA_138.1_SSURef_NR99_tax_silva_full_align_trunc.fasta.gz
+target = Bacteria
+target_fasta = None
+kmer_size = 32
+gc_min = 0.35
+gc_max = 0.65
+max_homopolymer = 5
+merge_overlapping = False
+exclude_unnamed_congeners = False
+blast_db = None
+blast_identity = 85.0
+do_select = True
+spec_floors = 1,0.999,0.995,0.99,0.98,0.95,0.9

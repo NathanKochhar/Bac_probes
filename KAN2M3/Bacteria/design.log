@@ -1,0 +1,18 @@
+
+Designing probes for 1 taxon/taxa. Pass 1/2 — reading SILVA …
+
+Scoring 32-mers (conservation ≥ 5%) …
+  Bacteria: 431,575 seqs, 1,393 candidates
+
+Pass 2/2 — exact off-target scan …
+
+BLAST (identity ≥ 85%, max_target_seqs 500000) …
+  Bacteria: 40 BLASTed
+
+Selecting probes …
+  Bacteria: floor 0.999 → 15 probes, pooled 97.5%
+
+    taxa  target_seqs  spec_floor_used  probes_selected  pooled_coverage_pct  goal_reached
+Bacteria       431575            0.999               15                 97.5          True
+
+Results written to KAN2M3\Bacteria/

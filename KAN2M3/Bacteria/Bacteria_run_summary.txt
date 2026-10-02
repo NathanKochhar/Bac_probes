@@ -1,0 +1,120 @@
+UNIVERSAL BACTERIA PROBE SET - RUN SUMMARY
+==========================================
+Run: bac-probes 0.1.0, 2026-10-02
+Database: SILVA 138.1 SSURef NR99 (510,508 sequences) + SILVA BLAST database
+Target: domain Bacteria (431,575 sequences). Off-targets: Archaea (20,389) and
+Eukaryota (58,544).
+
+Commands (exact; also in command.txt and validate.log):
+  bac-probes design silva_db/SILVA_138.1_SSURef_NR99_tax_silva_full_align_trunc.fasta.gz Bacteria --level domain --min-conservation 0.05 --n-probes 15 --pool-target 0.97 --blast --blast-pool 40 --blast-max-target-seqs 500000 --threads 14 --no-candidates -o KAN2M3/Bacteria
+  bac-probes validate silva_db/SILVA_138.1_SSURef_NR99_tax_silva_full_align_trunc.fasta.gz KAN2M3/Bacteria/validate_input.csv --blast --blast-max-target-seqs 500000 --threads 14 --breakdown phylum --min-seqs 500 --output KAN2M3/Bacteria/validation_results.tsv
+
+The 'probe' column is the reverse complement of the k-mer; this is the
+sequence to order for in-situ use.
+
+
+HEADLINE
+--------
+  - 15 probes cover 97.5% of all bacterial 16S sequences in SILVA (goal 97%).
+  - Selected at specificity floor 0.999 on BLAST weighted specificity; every
+    probe scores >= 0.9999, and no probe hit the BLAST hit cap.
+  - Several probes sit on classic universal 16S sites; probe 15's sequence
+    contains EUB338 (GCTGCCTCCCGTAGGAGT) exactly.
+
+
+WHAT CHANGED FROM THE FIRST UNIVERSAL RUN
+-----------------------------------------
+  First run: design --min-conservation 0.3 --n-probes 10 --pool-target 0.9,
+  exact matching only, then BLAST-checked afterwards.
+  Result: 8 probes, 93.5% coverage.
+
+  This run:
+  - --min-conservation 0.05 (was 0.3): lets in probes that cover a small share
+    of all bacteria but fill gaps in specific phyla (1,393 candidates vs 93).
+    Probes 4, 10 and 13 cover only 9-12% of bacteria each but add sequences the
+    broad probes miss.
+  - --n-probes 15, --pool-target 0.97: room for gap-filling probes.
+  - --blast during selection (40 candidates, 500,000-hit cap), so near-match
+    specificity decided which probes were picked.
+
+  Coverage by phylum, first run -> this run:
+    All bacteria        93.5% -> 97.5%
+    Bacteroidota          81% -> 97%
+    Planctomycetota       19% -> 76%
+    Verrucomicrobiota     75% -> 86%
+    Chloroflexi           68% -> 79%
+    Patescibacteria       27% -> 55%
+    Cyanobacteria         91% -> 92%
+
+
+PROBES (in pick order)
+----------------------
+  #   Probe (order this)                 Alone   Cumulative  Exact off  BLAST wspec
+  1   GGGTTGCGCTCGTTGCGGGACTTAACCCAACA   72.3%     72.3%         0      1.000000
+  2   GGCGGTGTGTACAAGGCCCGGGAACGTATTCA   48.0%     84.5%         0      0.999998
+  3   GCGTGGACTACCAGGGTATCTAATCCTGTTTG   51.4%     89.1%         2      0.999916
+  4   GGTAAGGTTCCTCGCGTATCATCGAATTAAAC    9.4%     91.5%         0      1.000000
+  5   ACACGAGCTGACGACAGCCATGCAGCACCTGT   34.7%     93.8%        11      0.999958
+  6   CTACGTATTACCGCGGCTGCTGGCACGTAGTT   36.0%     95.2%         0      1.000000
+  7   TCGAATTAAACCACATGCTCCACCGCTTGTGC   48.3%     95.8%        18      0.999943
+  8   CGTAGGAGTCTGGGCCGTGTCTCAGTCCCAGT   32.5%     96.2%         2      0.999992
+  9   TTGTGCGGGTCCCCGTCAATTCCTTTGAGTTT   16.6%     96.6%         0      0.999999
+  10  ATTCCTTTGAGTTTTAGCCTTGCGGCCGTACT    9.5%     96.8%         0      0.999978
+  11  CCCGTAGGAGTCTGGACCGTGTCTCAGTTCCA   18.7%     97.0%         0      1.000000
+  12  GGACTTAACCCAACATCTCACGACACGAGCTG   63.1%     97.2%         0      1.000000
+  13  TTTGAGTTTTAATCTTGCGACCGTACTCCCCA   12.0%     97.3%         0      0.999965
+  14  CATGATGACTTGACGTCATCCCCACCTTCCTC   16.7%     97.4%         0      0.999986
+  15  ATTCCCCACTGCTGCCTCCCGTAGGAGTCTGG   47.2%     97.5%         2      0.999993
+
+  Alone = share of bacterial sequences the probe matches exactly by itself.
+  Exact off = exact off-target matches on either strand (from validate).
+
+
+COVERAGE BY PHYLUM (phyla with >= 500 sequences; validation_results_breakdown.tsv)
+---------------------------------------------------------------------------------
+  >= 96%: Proteobacteria 99%, Firmicutes 100%, Bacteroidota 97%,
+  Actinobacteriota 100%, Acidobacteriota 100%, Desulfobacterota 100%,
+  Campylobacterota 100%, Spirochaetota 99%, Fusobacteriota 99%, and most
+  smaller phyla.
+
+  Remaining gaps:
+    Patescibacteria     55%   (2,488 / 4,544)
+    Planctomycetota     76%   (6,579 / 8,686)
+    Chloroflexi         79%   (7,202 / 9,069)
+    Verrucomicrobiota   86%   (5,884 / 6,834)
+    Cyanobacteria       92%   (9,790 / 10,607)
+  These are mostly environmental phyla; Patescibacteria (candidate phyla
+  radiation) have unusual, divergent 16S genes.
+
+
+THINGS TO CHECK BEFORE ORDERING
+-------------------------------
+  - Plant and animal matches: probes 5 and 7 exactly match 11 and 18
+    Embryophyta/Metazoa sequences in SILVA (see top_offtargets in
+    validation_results.tsv); probes 3, 8 and 15 match 2 each. These may be
+    mislabelled entries or organelle-derived sequences, but for host tissue
+    check probes 5 and 7 against the host's own rRNA.
+  - Organelles: SILVA classifies chloroplasts (5,049 sequences) and some
+    mitochondria (1,188) as Bacteria, so they count as TARGET here; binding to
+    organelle rRNA cannot show up as an off-target.
+  - Overlapping probes: probes are kept at distinct sites only if they share
+    no 16-bp stretch, so some overlap by up to 15 bp (1 and 12 by 15 bp, 9 and
+    10 by 14 bp; 8, 11 and 15 all sit on the EUB338 site as sequence variants).
+    Variants that bind different organisms are fine, but probes that overlap
+    on the same molecule would compete for it.
+  - Coverage counts exact 32-bp matches only; probes also near-match many
+    more sequences (BLAST target hits), so real hybridisation coverage is
+    likely higher.
+  - Large-subunit rRNA (23S/28S) is not in this database, so binding to it is
+    not checked. Specificity is measured against SILVA 138.1 only.
+
+
+FILES
+-----
+  design_summary.csv, all_selected_probes.csv, selected/   design outputs
+  command.txt, design.log                   design command, settings and log
+  validate_input.csv                        the 15 probes as validate input
+  validation_results.tsv                    validate --blast results per probe
+  validation_results_breakdown.tsv          coverage per phylum
+  validate.log                              validate log
+  Bacteria_run_summary.txt                  this summary

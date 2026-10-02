@@ -1,0 +1,2 @@
+taxa,level,target_seqs,candidates_found,candidates_considered,spec_metric,spec_floor_used,probes_selected,pooled_coverage_pct,goal_reached,conservation_min_pct,conservation_max_pct,spec_min,spec_mean,exact_offtarget_total,probes_blast_capped,top_offtargets
+Bacteria,domain,431575,1393,40,blast_weighted_specificity,0.999,15,97.5,True,9.45,72.33,0.999916,1.0,33,0,Archaea (10); Eukaryota (5)
