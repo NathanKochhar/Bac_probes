@@ -157,7 +157,11 @@ Outputs in `--output-dir`:
 
 #### Probe selection
 
-For each taxon, `design` tries the `--spec-floors` from strictest to loosest (default `1, 0.999, 0.995, 0.99, 0.98, 0.95, 0.9`). At each floor it runs a greedy set cover over the candidates at or above it: every pick is the probe that adds the most not-yet-covered target sequences, skipping probes that share a 16-mer with one already picked (same site). It stops at the first floor whose set reaches `--pool-target`; if none does, it keeps the floor with the highest pooled coverage. If coverage stops growing before `--n-probes`, remaining slots are filled with further specific probes at distinct sites, which adds signal without losing specificity.
+For each taxon, `design` tries the `--spec-floors` from strictest to loosest (default `1, 0.999, 0.995, 0.99, 0.98, 0.95, 0.9`). At each floor it runs a greedy set cover over the candidates at or above it: every pick is the probe that adds the most not-yet-covered target sequences, skipping probes that share a 16-mer with one already picked (same site) or that would bind within `--min-gap` bp of one (see below). It stops at the first floor whose set reaches `--pool-target`; if none does, it keeps the floor with the highest pooled coverage. If coverage stops growing before `--n-probes`, remaining slots are filled with further specific probes at distinct sites, which adds signal without losing specificity.
+
+#### Probe spacing (`--min-gap`)
+
+Probes that bind the same rRNA molecule too close together compete for it. With `--min-gap N` (default 10), two probes may both be selected only if, on every target sequence that carries both, at least N bp separate their binding sites. Probes that never occur on the same sequence — for example variants of one site for different organisms — are not restricted.
 
 The specificity used is `exact_precision`, or `blast_weighted_specificity` with `--blast` (the `_excl_unnamed` versions with `--exclude-unnamed-congeners`). With `--blast`, only the `--blast-pool` candidates per taxon are BLASTed and considered: half chosen for coverage and half for exact specificity, at distinct sites. Ties are always broken on the k-mer sequence, so repeated runs give identical results.
 
@@ -267,6 +271,7 @@ The table is printed and, with `--output`, written next to it as `<output>_break
 | `--blast-pool` | `120` | Candidates BLASTed per taxon |
 | `--select / --no-select` | `--select` | Select a probe set; `--no-select` writes candidate tables only |
 | `--n-probes` | `10` | Maximum probes selected per taxon |
+| `--min-gap` | `10` | Minimum bp between two selected probes' binding sites on any target sequence carrying both; `0` only forbids overlap |
 | `--pool-target` | `0.50` | Pooled coverage to aim for |
 | `--spec-floors` | `1,0.999,0.995,0.99,0.98,0.95,0.9` | Specificity floors to try |
 | `--candidates / --no-candidates` | `--candidates` | Write full candidate tables |

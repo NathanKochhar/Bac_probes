@@ -23,6 +23,7 @@ from .database import (
 )
 from .design import (
     DEFAULT_SPEC_FLOORS,
+    SpacingChecker,
     Target,
     blast_pool,
     candidate_table,
@@ -177,6 +178,11 @@ def list_taxa_cmd(silva_fasta: str, level: str, top: int) -> None:
 )
 @click.option("--n-probes", default=10, show_default=True, help="Maximum probes selected per taxon.")
 @click.option(
+    "--min-gap", default=10, show_default=True, type=click.IntRange(min=0),
+    help="Minimum bp between the binding sites of two selected probes on any target sequence "
+         "that carries both, so they don't compete for the same molecule. 0 = only forbid overlap.",
+)
+@click.option(
     "--pool-target", default=0.50, show_default=True,
     help="Pooled coverage to aim for: the strictest specificity floor reaching it is used.",
 )
@@ -212,6 +218,7 @@ def design(
     blast_pool_size: int,
     do_select: bool,
     n_probes: int,
+    min_gap: int,
     pool_target: float,
     spec_floors: str,
     write_candidates: bool,
@@ -232,7 +239,8 @@ def design(
     selects up to --n-probes probes at distinct sites that together cover
     --pool-target of the taxon, using the strictest --spec-floors value that gets
     there. Specificity is exact_precision (target hits / all SILVA hits), or
-    blast_weighted_specificity with --blast.
+    blast_weighted_specificity with --blast. Selected probes that bind the same
+    target sequence are kept at least --min-gap bp apart.
 
     \b
     Outputs in --output-dir:
@@ -398,8 +406,9 @@ def design(
                 df_sel = df
             pool = list(df_sel.kmer) if use_blast else selection_pool(df_sel, metric, min_floor)
             masks = coverage_masks(t.seqs, pool)
+            spacing = SpacingChecker(t.seqs, min_gap)
             floor, picked, pooled = select_probes(df_sel, masks, len(t.seqs), metric, floors,
-                                                  n_probes, pool_target)
+                                                  n_probes, pool_target, spacing)
             sel = selected_table(df_sel, picked, len(t.seqs))
             sel.insert(0, "level", t.level)
             sel.insert(0, "taxa", t.name)

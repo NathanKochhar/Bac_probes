@@ -17,6 +17,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Iterable, Iterator
 
+import numpy as np
 import pandas as pd
 
 from .database import TAXONOMY_LEVELS, is_unnamed_species, taxon_matches
@@ -305,6 +306,49 @@ def selection_pool(df: pd.DataFrame, metric: str, min_floor: float,
     return list(dict.fromkeys(by_spec + by_cov))
 
 
+class SpacingChecker:
+    """
+    Keeps probes that bind the same target sequence at least `min_gap` bp apart,
+    so they don't compete for the same molecule.
+
+    Two probes conflict if, on ANY target sequence containing both, the gap
+    between their binding sites is < min_gap (a negative gap = overlap). Probes
+    that never occur on the same sequence (e.g. variants of one site for
+    different organisms) never conflict. Binding positions are looked up only
+    for probes actually compared, and cached.
+    """
+
+    def __init__(self, seqs: list[str], min_gap: int):
+        self.seqs = seqs
+        self.min_gap = min_gap
+        self._dtype = np.int16 if max((len(s) for s in seqs), default=0) < 32_000 else np.int32
+        self._pos: dict[str, np.ndarray] = {}
+
+    def positions(self, probe: str) -> np.ndarray:
+        """Start position of `probe` in each target sequence (-1 where absent)."""
+        if probe not in self._pos:
+            self._pos[probe] = np.fromiter((s.find(probe) for s in self.seqs),
+                                           dtype=self._dtype, count=len(self.seqs))
+        return self._pos[probe]
+
+    def min_spacing(self, a: str, b: str) -> int | None:
+        """Smallest gap (bp) between a and b on sequences containing both; None if never together."""
+        pa, pb = self.positions(a), self.positions(b)
+        both = (pa >= 0) & (pb >= 0)
+        if not both.any():
+            return None
+        pa, pb = pa[both].astype(np.int64), pb[both].astype(np.int64)
+        gap = np.where(pa <= pb, pb - (pa + len(a)), pa - (pb + len(b)))
+        return int(gap.min())
+
+    def conflicts(self, probe: str, picked: Iterable[str]) -> bool:
+        for other in picked:
+            gap = self.min_spacing(probe, other)
+            if gap is not None and gap < self.min_gap:
+                return True
+        return False
+
+
 def greedy_select(
     df: pd.DataFrame,
     masks: dict[str, int],
@@ -312,25 +356,33 @@ def greedy_select(
     metric: str,
     floor: float,
     n_probes: int,
+    spacing: SpacingChecker | None = None,
 ) -> tuple[list[tuple[str, int]], float]:
     """
     Greedy set cover over candidates with `metric` >= floor: each pick adds the
     most not-yet-covered target sequences (ties: higher metric, then k-mer),
-    skipping probes at an already-picked site. If coverage stops growing before
-    n_probes, the remaining slots are filled with further non-overlapping probes
-    (best metric first). Returns [(probe, newly covered seqs)] and pooled fraction.
+    skipping probes at an already-picked site and, with `spacing`, probes that
+    would bind too close to an already-picked probe on the same sequence. If
+    coverage stops growing before n_probes, the remaining slots are filled with
+    further non-conflicting probes (best metric first).
+    Returns [(probe, newly covered seqs)] and pooled fraction.
     """
     pool = df[(df[metric] >= floor) & df.kmer.isin(masks.keys())]
     spec = dict(zip(pool.kmer, pool[metric]))
     remaining = {p: masks[p] for p in pool.kmer}
     covered, seen, picked = 0, set(), []
+
+    def clashes(p: str) -> bool:
+        return bool(site_words(p) & seen) or (
+            spacing is not None and spacing.conflicts(p, [q for q, _ in picked]))
+
     while len(picked) < n_probes and remaining:
         best = min(remaining, key=lambda p: (-(remaining[p] & ~covered).bit_count(), -spec[p], p))
         gain = (remaining[best] & ~covered).bit_count()
         if gain == 0:
             break
         mask = remaining.pop(best)
-        if site_words(best) & seen:
+        if clashes(best):
             continue
         picked.append((best, gain))
         covered |= mask
@@ -338,7 +390,7 @@ def greedy_select(
     for p in _sorted(pool, [metric, "conservation_pct"]):
         if len(picked) >= n_probes:
             break
-        if p in remaining and not site_words(p) & seen:
+        if p in remaining and not clashes(p):
             picked.append((p, 0))
             seen |= site_words(p)
     return picked, (covered.bit_count() / n_target if n_target else 0.0)
@@ -352,6 +404,7 @@ def select_probes(
     floors: Iterable[float],
     n_probes: int,
     pool_target: float,
+    spacing: SpacingChecker | None = None,
 ) -> tuple[float | None, list[tuple[str, int]], float]:
     """
     Try specificity floors from strict to loose; return the first whose probe
@@ -359,7 +412,7 @@ def select_probes(
     """
     best: tuple[float | None, list, float] = (None, [], 0.0)
     for floor in sorted(set(floors), reverse=True):
-        picked, pooled = greedy_select(df, masks, n_target, metric, floor, n_probes)
+        picked, pooled = greedy_select(df, masks, n_target, metric, floor, n_probes, spacing)
         if best[0] is None or pooled > best[2] + 1e-12:
             best = (floor, picked, pooled)
         if pooled >= pool_target:

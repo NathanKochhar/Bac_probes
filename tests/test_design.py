@@ -14,6 +14,7 @@ from bac_probes.design import (
     conservation_job,
     coverage_masks,
     distinct_sites,
+    SpacingChecker,
     greedy_select,
     init_offtarget_scan,
     offtarget_job,
@@ -316,3 +317,64 @@ def test_design_merge_overlapping(silva, tmp_path):
     assert len(gainers) == 2
     assert all(any(s in seg or seg in s for seg in (CORE1, CORE2)) for s in gainers)
     assert sel.cumulative_coverage_pct.iloc[-1] == 100.0
+
+
+# ── --min-gap spacing ─────────────────────────────────────────────────────────
+
+A, B, C = CORE1[:32], CORE2[:32], SHARED[:32]
+F5, F20, F30 = "ACGTA", "ACGTA" * 4, "ACGTA" * 6
+
+
+def test_spacing_min_spacing_gap_overlap_and_absent():
+    seqs = [A + F5 + B, A[:10] + B, C]
+    sc = SpacingChecker(seqs, 10)
+    assert sc.min_spacing(A, B) == 5                       # seq 0: 5 bp apart
+    assert sc.min_spacing(A, C) is None                    # never on the same sequence
+    overlap = SpacingChecker([CORE1], 10)
+    assert overlap.min_spacing(CORE1[0:32], CORE1[20:52]) == -12   # 12 bp overlap
+
+
+def test_spacing_conflicts_threshold():
+    sc = SpacingChecker([A + F5 + B], 10)
+    assert sc.conflicts(B, [A])
+    assert not SpacingChecker([A + F5 + B], 5).conflicts(B, [A])   # gap 5 >= 5
+    assert not SpacingChecker([A + F5 + B], 0).conflicts(B, [A])
+
+
+def test_spacing_allows_variants_on_different_sequences():
+    sc = SpacingChecker([A, CORE1[2:34]], 10)                # overlapping site, different seqs
+    assert not sc.conflicts(CORE1[2:34], [A])
+
+
+def _spacing_case(min_gap):
+    seqs = [A + F5 + B + F20 + C, A + F30 + C, B, A]
+    df = _cands([(A, 75, 1.0), (B, 50, 1.0), (C, 50, 1.0)])
+    masks = coverage_masks(seqs, [A, B, C])
+    return greedy_select(df, masks, len(seqs), "exact_precision", 1.0, 3,
+                         SpacingChecker(seqs, min_gap))
+
+
+def test_greedy_respects_min_gap():
+    picked, _ = _spacing_case(10)
+    probes = [p for p, _ in picked]
+    assert B not in probes                 # only 5 bp from A on seq 0
+    assert probes == [A, C]                # C is >= 30 bp from A everywhere
+
+
+def test_greedy_min_gap_zero_allows_close_probes():
+    picked, _ = _spacing_case(0)
+    assert [p for p, _ in picked][:2] == [A, B]
+
+
+def test_design_selected_probes_respect_min_gap(silva, tmp_path):
+    out = tmp_path / "out"
+    _run([silva, "Alphagenus", "--threads", "1", "-o", str(out)])
+    sel = pd.read_csv(out / "selected" / "Alphagenus_selected_probes.csv")
+    assert "min_spacing_bp" not in sel.columns
+    seqs = [rec.splitlines()[1] for rec in open(silva).read().split(">")[1:]
+            if "Alphagenus" in rec.splitlines()[0]]
+    sc = SpacingChecker(seqs, 10)
+    probes = list(sel.kmer)
+    for i, p in enumerate(probes):
+        assert not sc.conflicts(p, probes[:i] + probes[i + 1:])
+    assert "min_gap = 10" in (out / "command.txt").read_text()
