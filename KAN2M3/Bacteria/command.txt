@@ -1,10 +1,11 @@
-# bac-probes 0.1.0, run 2026-10-02T14:40:06
-bac-probes design silva_db/SILVA_138.1_SSURef_NR99_tax_silva_full_align_trunc.fasta.gz Bacteria --level domain --min-conservation 0.05 --n-probes 15 --pool-target 0.97 --blast --blast-pool 40 --blast-max-target-seqs 500000 --threads 14 --no-candidates -o KAN2M3/Bacteria
+# bac-probes 0.1.0, run 2026-10-02T23:35:18
+bac-probes design silva_db/SILVA_138.1_SSURef_NR99_tax_silva_full_align_trunc.fasta.gz Bacteria --level domain --min-conservation 0.05 --n-probes 15 --min-gap 10 --pool-target 0.97 --blast --blast-pool 40 --blast-max-target-seqs 500000 --threads 14 --no-candidates -o KAN2M3/Bacteria
 
 # resolved settings
 level = domain
 min_conservation = 0.05
 n_probes = 15
+min_gap = 10
 pool_target = 0.97
 use_blast = True
 blast_pool_size = 40

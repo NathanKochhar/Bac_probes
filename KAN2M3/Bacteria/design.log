@@ -10,9 +10,9 @@ BLAST (identity ≥ 85%, max_target_seqs 500000) …
   Bacteria: 40 BLASTed
 
 Selecting probes …
-  Bacteria: floor 0.999 → 15 probes, pooled 97.5%
+  Bacteria: floor 0.999 → 15 probes, pooled 95.3%
 
     taxa  target_seqs  spec_floor_used  probes_selected  pooled_coverage_pct  goal_reached
-Bacteria       431575            0.999               15                 97.5          True
+Bacteria       431575            0.999               15                95.29         False
 
 Results written to KAN2M3\Bacteria/
