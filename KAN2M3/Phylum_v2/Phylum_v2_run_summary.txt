@@ -1,0 +1,126 @@
+KAN2M3 PHYLUM PROBE DESIGN v2 - RUN SUMMARY
+===========================================
+Run: bac-probes 0.1.0, run 2026-10-03T01:17:50
+Database: SILVA 138.1 SSURef NR99 (510,508 sequences) + SILVA BLAST database
+Input: KAN2M3/KAN2M3-phylum-silva.csv (SILVA spellings of KAN2M3-phylum.csv)
+
+Command (exact, from command.txt):
+  bac-probes design silva_db/SILVA_138.1_SSURef_NR99_tax_silva_full_align_trunc.fasta.gz KAN2M3/KAN2M3-phylum-silva.csv --level phylum --min-conservation 0.1 --blast --blast-max-target-seqs 200000 --n-probes 15 --min-gap 10 --threads 14 --no-candidates -o KAN2M3/Phylum_v2
+
+The 'probe' column in every output file is the reverse complement of the
+k-mer; this is the sequence to order for in-situ use.
+
+
+HEADLINE
+--------
+  - 6 of 6 taxa reach the 50% pooled-coverage goal (55-85% pooled).
+  - Specificity floors used: 1 x1, 0.999 x1, 0.995 x3, 0.99 x1.
+  - 58 probes selected in total; 1 of 6 taxa have zero exact off-targets
+    across all their selected probes.
+
+
+NAME MAPPING (KAN2M3 name -> SILVA 138.1 name used)
+---------------------------------------------------
+  Bacillota-Firmicutes                 -> Firmicutes
+  Pseudomonadota-Proteobacteria        -> Proteobacteria
+  Bacteroidota-Bacteroidota            -> Bacteroidota
+  Actinomycetota-Actinobacteriota      -> Actinobacteriota
+  Fusobacteriota-Fusobacteriota        -> Fusobacteriota
+  Campylobacterota-Campilobacterota    -> Campylobacterota
+  Outputs use the SILVA names.
+
+
+CHANGES FROM V1 (../Phylum)
+-----------------------------
+  Same settings as v1 except --n-probes 15 (was 10) and --min-gap 10 (new:
+  probes that bind the same target sequence must be >= 10 bp apart, so they
+  don't compete for the same rRNA molecule).
+
+  Taxon                v1: floor / probes / pooled      v2: floor / probes / pooled
+  Firmicutes                   0.995 /  9 /  54.8%          0.995 /  9 /  54.8%
+  Proteobacteria               0.995 / 10 /  56.4%          0.995 / 15 /  56.4%
+  Bacteroidota                  0.99 /  9 /  61.4%           0.99 /  9 /  61.4%
+  Actinobacteriota             0.995 /  8 /  74.9%          0.995 /  7 /  74.4%
+  Fusobacteriota                   1 /  8 /  85.4%              1 /  6 /  85.0%
+  Campylobacterota             0.999 / 10 /  64.4%          0.999 / 12 /  63.7%
+
+  Goal reached: v1 6 / 6, v2 6 / 6. Probes: v1 54, v2 58;
+  49 probes appear in both.
+
+
+NOTE ON METHOD
+--------------
+  This run aims for 50% POOLED coverage (sequences hit by at least one of the
+  probes), like the other levels. The first phylum run (before
+  bac-probes design) instead picked ~10 probes that EACH covered ~50%.
+  Candidates here are k-mers in >= 10% of the phylum's sequences.
+  --blast-max-target-seqs is 200,000 (default 50,000) so BLAST
+  reaches off-target near-misses even for phyla with 100,000+ sequences.
+
+
+METHOD
+------
+  bac-probes design (see the command above and every setting in command.txt):
+  - Candidates: 32-mers in >= 10% of the taxon's sequences, GC 35%-65%, no homopolymers >= 5.
+  - Exact off-target counts against all other SILVA sequences.
+  - BLAST (>= 85.0% identity) on up to 120 candidates per taxon at distinct sites,
+    half chosen for coverage and half for exact specificity. Selection uses
+    blast_weighted_specificity: off-target near-matches weighted by where
+    their mismatches fall (central mismatches ~ won't bind).
+  - Selection: specificity floors 1,0.999,0.995,0.99,0.98,0.95,0.9 tried strict to loose;
+    the strictest whose probe set reaches 50% pooled coverage is used.
+    Up to 15 probes at distinct sites (no shared 16-mer); each pick adds the
+    most not-yet-covered sequences, then spare slots are filled with further
+    specific probes. Ties break on the k-mer sequence, so reruns match.
+  - Spacing (--min-gap 10): probes binding the same target sequence are kept
+    at least 10 bp apart, so they don't compete for the same molecule.
+
+
+RESULTS (58 probes)
+--------------------
+  Taxon             Target seqs   Floor  Probes   Pooled   Probe cov. range  Min spec  Exact off
+  Firmicutes            117,419   0.995       9    54.8%         10.1-16.5%    0.9953        443
+  Proteobacteria        136,158   0.995      15    56.4%         10.0-23.0%    0.9951        561
+  Bacteroidota           46,851    0.99       9    61.4%         10.0-39.8%    0.9907        666
+  Actinobacteriota       39,596   0.995       7    74.4%         10.4-33.5%    0.9963        223
+  Fusobacteriota          1,838       1       6    85.0%         10.9-43.4%    1.0000          0
+  Campylobacterota        4,820   0.999      12    63.7%         10.2-23.2%    0.9990          4
+
+  Floor = specificity floor used; Pooled = sequences hit by at least one probe;
+  Probe cov. range = single-probe coverage of the selected probes; Min spec =
+  lowest blast_weighted_specificity among them; Exact off = exact
+  off-target matches summed over the selected probes.
+
+  Fewer than 15 probes: Firmicutes (9), Bacteroidota (9), Actinobacteriota (7), Fusobacteriota (6), Campylobacterota (12).
+  Only that many distinct sites passed the floor that reached the goal; a
+  looser floor would allow more probes but less specific ones.
+
+Main BLAST off-targets (taxon most often the top off-target of a selected probe):
+  Firmicutes        Proteobacteria (5); Actinobacteriota (2); Bacteroidota (1)
+  Proteobacteria    Firmicutes (8); Actinobacteriota (3); Bacteroidota (2)
+  Bacteroidota      Proteobacteria (5); Planctomycetota (2); Firmicutes (1)
+  Actinobacteriota  Firmicutes (4); Proteobacteria (2); Cyanobacteria (1)
+  Fusobacteriota    Proteobacteria (3); Firmicutes (2); Planctomycetota (1)
+  Campylobacterota  Bacteroidota (4); Firmicutes (4); Patescibacteria (1)
+
+
+FILES
+-----
+  design_summary.csv          one row per taxon (columns explained in the README)
+  all_selected_probes.csv     every selected probe
+  selected/<taxon>_selected_probes.csv   per-taxon probes in pick order, with
+                              new_seqs_covered and cumulative_coverage_pct
+  command.txt                 exact command, bac-probes version, date, all settings
+  design.log                  run log
+  Phylum_v2_run_summary.txt     this summary
+
+
+CAVEATS
+-------
+  - Only up to 120 candidates per taxon were BLASTed; others were not
+    considered for selection.
+  - No selected probe hit the BLAST max_target_seqs cap. The cap warnings in
+    design.log refer to other BLASTed candidates (very universal k-mers)
+    that were not selected.
+  - Coverage and specificity are measured against SILVA 138.1 only; taxa that
+    are under-represented or mislabelled in SILVA may behave differently.

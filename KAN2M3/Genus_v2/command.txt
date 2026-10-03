@@ -1,0 +1,28 @@
+# bac-probes 0.1.0, run 2026-10-03T02:00:11
+bac-probes design silva_db/SILVA_138.1_SSURef_NR99_tax_silva_full_align_trunc.fasta.gz KAN2M3/KAN2M3-genus-silva.csv --level genus --blast --n-probes 15 --min-gap 10 --threads 14 --no-candidates -o KAN2M3/Genus_v2
+
+# resolved settings
+level = genus
+use_blast = True
+n_probes = 15
+min_gap = 10
+threads = 14
+write_candidates = False
+output_dir = KAN2M3/Genus_v2
+silva_fasta = silva_db/SILVA_138.1_SSURef_NR99_tax_silva_full_align_trunc.fasta.gz
+target = KAN2M3/KAN2M3-genus-silva.csv
+target_fasta = None
+kmer_size = 32
+min_conservation = 0.02
+gc_min = 0.35
+gc_max = 0.65
+max_homopolymer = 5
+merge_overlapping = False
+exclude_unnamed_congeners = False
+blast_db = None
+blast_identity = 85.0
+blast_max_target_seqs = 50000
+blast_pool_size = 120
+do_select = True
+pool_target = 0.5
+spec_floors = 1,0.999,0.995,0.99,0.98,0.95,0.9

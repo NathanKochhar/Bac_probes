@@ -1,0 +1,6 @@
+taxa,level,probe_rank,kmer,probe,length,gc_pct,conservation_pct,target_seqs,target_hits,exact_offtarget,exact_bg_seqs,exact_specificity,exact_precision,blast_total_hits,blast_target_hits,blast_offtarget_hits,blast_weighted_offtarget,blast_specificity,blast_weighted_specificity,blast_top_offtarget,blast_capped,new_seqs_covered,cumulative_coverage_pct
+Lachnospira,genus,1,GGGGCACATAAGTGCTCCGGTGCCGCAGCAAA,TTTGCTGCGGCACCGGAGCACTTATGTGCCCC,32,62.5,10.64,141,15,1,510367,0.999998,0.9375,567,121,446,3.057,0.213404,0.975361,Lachnospiraceae UCG-001,False,15,10.64
+Lachnospira,genus,2,AACGAAGCATTTACGACAGATTTCTTCGGAAT,ATTCCGAAGAAATCTGTCGTAAATGCTTCGTT,32,37.5,2.84,141,4,0,510367,1.0,1.0,218,59,159,2.986,0.270642,0.951824,[Eubacterium] eligens group,False,4,13.48
+Lachnospira,genus,3,AAGCGCACAGTGACACATGTCACGGTGTGAAA,TTTCACACCGTGACATGTGTCACTGTGCGCTT,32,50.0,2.13,141,3,0,510367,1.0,1.0,416,6,410,0.0,0.014423,1.0,uncultured,False,3,15.6
+Lachnospira,genus,4,AAACAAAGTGAAGCTAGAGTGTGAGCTTAAGC,GCTTAAGCTCACACTCTAGCTTCACTTTGTTT,32,40.6,2.13,141,3,0,510367,1.0,1.0,711,79,632,0.56,0.111111,0.992964,Blautia,False,3,17.73
+Lachnospira,genus,5,AACCCCGGGACTGCCTTTGAAACTGTCAGACT,AGTCTGACAGTTTCAAAGGCAGTCCCGGGGTT,32,53.1,2.13,141,3,0,510367,1.0,1.0,11946,61,11885,2.35,0.005106,0.962906,uncultured,False,0,17.73

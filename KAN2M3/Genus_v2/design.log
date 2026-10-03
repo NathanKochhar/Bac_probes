@@ -1,0 +1,150 @@
+
+Designing probes for 34 taxon/taxa. Pass 1/2 — reading SILVA …
+
+Scoring 32-mers (conservation ≥ 2%) …
+  Staphylococcus: 6,416 seqs, 3,106 candidates
+  Streptococcus: 7,073 seqs, 5,072 candidates
+  Enterococcus: 2,061 seqs, 2,630 candidates
+  Lactobacillus: 1,408 seqs, 5,690 candidates
+  Clostridium sensu stricto 1: 1,941 seqs, 5,924 candidates
+  Lachnospira: 141 seqs, 5,031 candidates
+  Blautia: 3,091 seqs, 5,539 candidates
+  Anaerostipes: 491 seqs, 4,845 candidates
+  Ruminococcus: 1,442 seqs, 7,326 candidates
+  Escherichia-Shigella: 7,667 seqs, 1,836 candidates
+  Enterobacter: 2,404 seqs, 2,569 candidates
+  Salmonella: 5,327 seqs, 1,688 candidates
+  Pseudomonas: 9,234 seqs, 3,765 candidates
+  Moraxella: 345 seqs, 4,082 candidates
+  Acinetobacter: 3,378 seqs, 3,671 candidates
+  Neisseria: 1,395 seqs, 3,669 candidates
+  Bacteroides: 3,747 seqs, 6,778 candidates
+  Prevotella: 2,199 seqs, 7,813 candidates
+  Porphyromonas: 714 seqs, 6,994 candidates
+  Tannerella: 83 seqs, 7,550 candidates
+  Parabacteroides: 472 seqs, 4,970 candidates
+  Alistipes: 555 seqs, 5,592 candidates
+  Cutibacterium: 1,693 seqs, 2,378 candidates
+  Corynebacterium: 3,609 seqs, 6,274 candidates
+  Actinomyces: 717 seqs, 4,437 candidates
+  Bifidobacterium: 708 seqs, 3,976 candidates
+  Micrococcus: 332 seqs, 2,312 candidates
+  Fusobacterium: 1,164 seqs, 4,961 candidates
+  Cetobacterium: 136 seqs, 4,633 candidates
+  Leptotrichia: 349 seqs, 7,073 candidates
+  Sneathia: 11 seqs, 2,934 candidates
+  Streptobacillus: 30 seqs, 7,706 candidates
+  Campylobacter: 1,035 seqs, 5,750 candidates
+  Helicobacter: 640 seqs, 4,979 candidates
+
+Pass 2/2 — exact off-target scan …
+
+BLAST (identity ≥ 85%, max_target_seqs 50000) …
+  Staphylococcus: 73 BLASTed (4 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Streptococcus: 111 BLASTed (2 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Enterococcus: 45 BLASTed (1 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Lactobacillus: 116 BLASTed (3 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Clostridium sensu stricto 1: 104 BLASTed
+  Lachnospira: 25 BLASTed
+  Blautia: 6 BLASTed
+  Anaerostipes: 30 BLASTed (1 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Ruminococcus: 69 BLASTed
+  Escherichia-Shigella: 18 BLASTed
+  Enterobacter: 4 BLASTed
+  Salmonella: 15 BLASTed (2 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Pseudomonas: 86 BLASTed (5 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Moraxella: 78 BLASTed (2 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Acinetobacter: 87 BLASTed (5 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Neisseria: 70 BLASTed
+  Bacteroides: 120 BLASTed (1 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Prevotella: 120 BLASTed
+  Porphyromonas: 120 BLASTed
+  Tannerella: 120 BLASTed
+  Parabacteroides: 90 BLASTed
+  Alistipes: 113 BLASTed
+  Cutibacterium: 61 BLASTed (2 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Corynebacterium: 120 BLASTed (1 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Actinomyces: 93 BLASTed (1 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Bifidobacterium: 118 BLASTed (3 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Micrococcus: 26 BLASTed
+  Fusobacterium: 120 BLASTed (6 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Cetobacterium: 85 BLASTed (2 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Leptotrichia: 120 BLASTed
+  Sneathia: 70 BLASTed (1 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Streptobacillus: 120 BLASTed (1 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Campylobacter: 120 BLASTed (1 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Helicobacter: 120 BLASTed (2 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+
+Selecting probes …
+  Staphylococcus: floor 0.995 → 13 probes, pooled 94.0%
+  Streptococcus: floor 0.999 → 15 probes, pooled 78.5%
+  Enterococcus: floor 0.995 → 7 probes, pooled 60.6%
+  Lactobacillus: floor 0.995 → 15 probes, pooled 55.1%
+  Clostridium sensu stricto 1: floor 0.995 → 15 probes, pooled 61.8%
+  Lachnospira: floor 0.95 → 5 probes, pooled 17.7%
+  Blautia: floor 0.95 → 4 probes, pooled 5.6%
+  Anaerostipes: floor 0.9 → 7 probes, pooled 13.8%
+  Ruminococcus: floor 0.9 → 15 probes, pooled 57.8%
+  Escherichia-Shigella: floor 0.995 → 3 probes, pooled 91.9%
+  Enterobacter: floor 0.95 → 2 probes, pooled 5.7%
+  Salmonella: floor 0.995 → 2 probes, pooled 43.9%
+  Pseudomonas: floor 0.995 → 15 probes, pooled 89.5%
+  Moraxella: floor 0.99 → 10 probes, pooled 90.7%
+  Acinetobacter: floor 0.999 → 10 probes, pooled 55.0%
+  Neisseria: floor 0.999 → 6 probes, pooled 56.9%
+  Bacteroides: floor 0.995 → 15 probes, pooled 75.3%
+  Prevotella: floor 0.99 → 15 probes, pooled 54.6%
+  Porphyromonas: floor 1.0 → 15 probes, pooled 80.7%
+  Tannerella: floor 1.0 → 15 probes, pooled 63.9%
+  Parabacteroides: floor 0.99 → 14 probes, pooled 51.5%
+  Alistipes: floor 0.995 → 15 probes, pooled 55.9%
+  Cutibacterium: floor 0.995 → 5 probes, pooled 84.2%
+  Corynebacterium: floor 0.995 → 15 probes, pooled 79.7%
+  Actinomyces: floor 0.995 → 15 probes, pooled 72.0%
+  Bifidobacterium: floor 1.0 → 14 probes, pooled 61.3%
+  Micrococcus: floor 0.98 → 7 probes, pooled 66.3%
+  Fusobacterium: floor 0.999 → 15 probes, pooled 54.0%
+  Cetobacterium: floor 0.999 → 15 probes, pooled 75.0%
+  Leptotrichia: floor 1.0 → 15 probes, pooled 93.7%
+  Sneathia: floor 1.0 → 15 probes, pooled 100.0%
+  Streptobacillus: floor 1.0 → 15 probes, pooled 100.0%
+  Campylobacter: floor 1.0 → 15 probes, pooled 91.0%
+  Helicobacter: floor 1.0 → 15 probes, pooled 85.9%
+
+                       taxa  target_seqs  spec_floor_used  probes_selected  pooled_coverage_pct  goal_reached
+             Staphylococcus         6416            0.995               13                94.00          True
+              Streptococcus         7073            0.999               15                78.47          True
+               Enterococcus         2061            0.995                7                60.60          True
+              Lactobacillus         1408            0.995               15                55.11          True
+Clostridium sensu stricto 1         1941            0.995               15                61.77          True
+                Lachnospira          141            0.950                5                17.73         False
+                    Blautia         3091            0.950                4                 5.60         False
+               Anaerostipes          491            0.900                7                13.85         False
+               Ruminococcus         1442            0.900               15                57.84          True
+       Escherichia-Shigella         7667            0.995                3                91.94          True
+               Enterobacter         2404            0.950                2                 5.70         False
+                 Salmonella         5327            0.995                2                43.91         False
+                Pseudomonas         9234            0.995               15                89.47          True
+                  Moraxella          345            0.990               10                90.72          True
+              Acinetobacter         3378            0.999               10                55.00          True
+                  Neisseria         1395            0.999                6                56.92          True
+                Bacteroides         3747            0.995               15                75.31          True
+                 Prevotella         2199            0.990               15                54.57          True
+              Porphyromonas          714            1.000               15                80.67          True
+                 Tannerella           83            1.000               15                63.86          True
+            Parabacteroides          472            0.990               14                51.48          True
+                  Alistipes          555            0.995               15                55.86          True
+              Cutibacterium         1693            0.995                5                84.23          True
+            Corynebacterium         3609            0.995               15                79.66          True
+                Actinomyces          717            0.995               15                71.97          True
+            Bifidobacterium          708            1.000               14                61.30          True
+                Micrococcus          332            0.980                7                66.27          True
+              Fusobacterium         1164            0.999               15                54.04          True
+              Cetobacterium          136            0.999               15                75.00          True
+               Leptotrichia          349            1.000               15                93.70          True
+                   Sneathia           11            1.000               15               100.00          True
+            Streptobacillus           30            1.000               15               100.00          True
+              Campylobacter         1035            1.000               15                91.01          True
+               Helicobacter          640            1.000               15                85.94          True
+
+Results written to KAN2M3\Genus_v2/

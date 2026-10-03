@@ -1,0 +1,38 @@
+
+Designing probes for 6 taxon/taxa. Pass 1/2 — reading SILVA …
+
+Scoring 32-mers (conservation ≥ 10%) …
+  Firmicutes: 117,419 seqs, 1,064 candidates
+  Proteobacteria: 136,158 seqs, 1,491 candidates
+  Bacteroidota: 46,851 seqs, 742 candidates
+  Actinobacteriota: 39,596 seqs, 1,417 candidates
+  Fusobacteriota: 1,838 seqs, 2,108 candidates
+  Campylobacterota: 4,820 seqs, 2,230 candidates
+
+Pass 2/2 — exact off-target scan …
+
+BLAST (identity ≥ 85%, max_target_seqs 200000) …
+  Firmicutes: 47 BLASTed (6 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Proteobacteria: 66 BLASTed (6 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Bacteroidota: 32 BLASTed (5 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Actinobacteriota: 50 BLASTed (3 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Fusobacteriota: 77 BLASTed (3 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+  Campylobacterota: 81 BLASTed (2 hit the max_target_seqs cap; their BLAST scores are incomplete — see blast_capped)
+
+Selecting probes …
+  Firmicutes: floor 0.995 → 9 probes, pooled 54.8%
+  Proteobacteria: floor 0.995 → 15 probes, pooled 56.4%
+  Bacteroidota: floor 0.99 → 9 probes, pooled 61.4%
+  Actinobacteriota: floor 0.995 → 7 probes, pooled 74.4%
+  Fusobacteriota: floor 1.0 → 6 probes, pooled 85.0%
+  Campylobacterota: floor 0.999 → 12 probes, pooled 63.7%
+
+            taxa  target_seqs  spec_floor_used  probes_selected  pooled_coverage_pct  goal_reached
+      Firmicutes       117419            0.995                9                54.83          True
+  Proteobacteria       136158            0.995               15                56.44          True
+    Bacteroidota        46851            0.990                9                61.38          True
+Actinobacteriota        39596            0.995                7                74.44          True
+  Fusobacteriota         1838            1.000                6                85.04          True
+Campylobacterota         4820            0.999               12                63.67          True
+
+Results written to KAN2M3\Phylum_v2/

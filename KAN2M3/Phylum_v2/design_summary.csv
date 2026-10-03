@@ -1,0 +1,7 @@
+taxa,level,target_seqs,candidates_found,candidates_considered,spec_metric,spec_floor_used,probes_selected,pooled_coverage_pct,goal_reached,conservation_min_pct,conservation_max_pct,spec_min,spec_mean,exact_offtarget_total,probes_blast_capped,top_offtargets
+Firmicutes,phylum,117419,1064,47,blast_weighted_specificity,0.995,9,54.83,True,10.14,16.48,0.995287,0.9982,443,0,Proteobacteria (5); Actinobacteriota (2); Bacteroidota (1)
+Proteobacteria,phylum,136158,1491,66,blast_weighted_specificity,0.995,15,56.44,True,10.01,22.96,0.99512,0.9986,561,0,Firmicutes (8); Actinobacteriota (3); Bacteroidota (2)
+Bacteroidota,phylum,46851,742,32,blast_weighted_specificity,0.99,9,61.38,True,10.0,39.84,0.990742,0.9948,666,0,Proteobacteria (5); Planctomycetota (2); Firmicutes (1)
+Actinobacteriota,phylum,39596,1417,50,blast_weighted_specificity,0.995,7,74.44,True,10.36,33.51,0.99635,0.9983,223,0,Firmicutes (4); Proteobacteria (2); Cyanobacteria (1)
+Fusobacteriota,phylum,1838,2108,77,blast_weighted_specificity,1.0,6,85.04,True,10.94,43.36,1.0,1.0,0,0,Proteobacteria (3); Firmicutes (2); Planctomycetota (1)
+Campylobacterota,phylum,4820,2230,81,blast_weighted_specificity,0.999,12,63.67,True,10.23,23.22,0.999008,0.9997,4,0,Bacteroidota (4); Firmicutes (4); Patescibacteria (1)

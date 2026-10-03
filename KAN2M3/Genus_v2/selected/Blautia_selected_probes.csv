@@ -1,0 +1,5 @@
+taxa,level,probe_rank,kmer,probe,length,gc_pct,conservation_pct,target_seqs,target_hits,exact_offtarget,exact_bg_seqs,exact_specificity,exact_precision,blast_total_hits,blast_target_hits,blast_offtarget_hits,blast_weighted_offtarget,blast_specificity,blast_weighted_specificity,blast_top_offtarget,blast_capped,new_seqs_covered,cumulative_coverage_pct
+Blautia,genus,1,ACTGCTCTTGGAACTGCGCGGCTGGAGTGCAG,CTGCACTCCAGCCGCGCAGTTCCAAGAGCAGT,32,62.5,2.91,3091,90,6,507417,0.999988,0.9375,870,210,660,8.874,0.241379,0.959456,uncultured,False,90,2.91
+Blautia,genus,2,AAGGGAGCGTAGACGGTGTTGCAAGTCTGATG,CATCAGACTTGCAACACCGTCTACGCTCCCTT,32,53.1,2.33,3091,72,7,507417,0.999986,0.9114,11892,2310,9582,31.676,0.194248,0.986473,uncultured,False,72,5.24
+Blautia,genus,3,ACTGCGACTGACGTTGAGGCCCGAAAGCGTGG,CCACGCTTTCGGGCCTCAACGTCAGTCGCAGT,32,62.5,2.85,3091,88,8,507417,0.999984,0.9167,48924,2899,46025,73.697,0.059255,0.975209,uncultured,False,9,5.53
+Blautia,genus,4,ACTGCATTGGAAACTGTGATACTCGAGTGCCG,CGGCACTCGAGTATCACAGTTTCCAATGCAGT,32,50.0,2.04,3091,63,4,507417,0.999992,0.9403,12359,1070,11289,5.102,0.086577,0.995254,Bacillus,False,2,5.6

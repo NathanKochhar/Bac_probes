@@ -1,0 +1,199 @@
+KAN2M3 GENUS PROBE DESIGN v2 - RUN SUMMARY
+==========================================
+Run: bac-probes 0.1.0, run 2026-10-03T02:00:11
+Database: SILVA 138.1 SSURef NR99 (510,508 sequences) + SILVA BLAST database
+Input: KAN2M3/KAN2M3-genus-silva.csv (KAN2M3-genus.csv with one SILVA rename)
+
+Command (exact, from command.txt):
+  bac-probes design silva_db/SILVA_138.1_SSURef_NR99_tax_silva_full_align_trunc.fasta.gz KAN2M3/KAN2M3-genus-silva.csv --level genus --blast --n-probes 15 --min-gap 10 --threads 14 --no-candidates -o KAN2M3/Genus_v2
+
+The 'probe' column in every output file is the reverse complement of the
+k-mer; this is the sequence to order for in-situ use.
+
+
+HEADLINE
+--------
+  - 29 of 34 taxa reach the 50% pooled-coverage goal (6-100% pooled).
+  - Specificity floors used: 1 x8, 0.999 x5, 0.995 x12, 0.99 x3, 0.98 x1, 0.95 x3, 0.9 x2.
+  - 394 probes selected in total; 10 of 34 taxa have zero exact off-targets
+    across all their selected probes.
+  - Not reached: Lachnospira (17.7%), Blautia (5.6%), Anaerostipes (13.8%), Enterobacter (5.7%), Salmonella (43.9%).
+
+
+NAME MAPPING (KAN2M3 name -> SILVA 138.1 name used)
+---------------------------------------------------
+  Clostridium                          -> Clostridium sensu stricto 1
+  SILVA splits Clostridium into ~19 'sensu stricto' clusters plus groups such
+  as Lachnoclostridium. Group 1 is the core genus (C. perfringens,
+  C. butyricum); the other clusters count as off-target here.
+  Outputs use the SILVA names.
+
+
+CHANGES FROM V1 (../Genus)
+----------------------------
+  Same settings as v1 except --n-probes 15 (was 10) and --min-gap 10 (new:
+  probes that bind the same target sequence must be >= 10 bp apart, so they
+  don't compete for the same rRNA molecule).
+
+  Taxon                           v1: floor / probes / pooled      v2: floor / probes / pooled
+  Staphylococcus                          0.995 / 10 /  92.8%          0.995 / 13 /  94.0%
+  Streptococcus                           0.999 / 10 /  79.0%          0.999 / 15 /  78.5%
+  Enterococcus                            0.995 /  9 /  60.6%          0.995 /  7 /  60.6%
+  Lactobacillus                           0.995 / 10 /  54.2%          0.995 / 15 /  55.1%
+  Clostridium sensu stricto 1             0.995 / 10 /  59.2%          0.995 / 15 /  61.8%
+  Lachnospira                              0.95 /  5 /  17.7%           0.95 /  5 /  17.7%
+  Blautia                                  0.95 /  4 /   5.6%           0.95 /  4 /   5.6%
+  Anaerostipes                              0.9 /  9 /  13.8%            0.9 /  7 /  13.8%
+  Ruminococcus                              0.9 / 10 /  51.6%            0.9 / 15 /  57.8%
+  Escherichia-Shigella                    0.995 /  4 /  94.7%          0.995 /  3 /  91.9%
+  Enterobacter                             0.95 /  2 /   5.7%           0.95 /  2 /   5.7%
+  Salmonella                              0.995 /  2 /  43.9%          0.995 /  2 /  43.9%
+  Pseudomonas                             0.995 / 10 /  86.7%          0.995 / 15 /  89.5%
+  Moraxella                                0.99 / 10 /  90.7%           0.99 / 10 /  90.7%
+  Acinetobacter                           0.999 / 10 /  55.5%          0.999 / 10 /  55.0%
+  Neisseria                               0.999 /  6 /  56.9%          0.999 /  6 /  56.9%
+  Bacteroides                             0.995 / 10 /  72.3%          0.995 / 15 /  75.3%
+  Prevotella                               0.99 / 10 /  52.8%           0.99 / 15 /  54.6%
+  Porphyromonas                               1 / 10 /  82.1%              1 / 15 /  80.7%
+  Tannerella                                  1 / 10 /  56.6%              1 / 15 /  63.9%
+  Parabacteroides                          0.99 / 10 /  50.4%           0.99 / 14 /  51.5%
+  Alistipes                               0.995 / 10 /  54.6%          0.995 / 15 /  55.9%
+  Cutibacterium                           0.995 /  8 /  87.5%          0.995 /  5 /  84.2%
+  Corynebacterium                         0.995 / 10 /  83.9%          0.995 / 15 /  79.7%
+  Actinomyces                             0.995 / 10 /  69.6%          0.995 / 15 /  72.0%
+  Bifidobacterium                             1 / 10 /  60.7%              1 / 14 /  61.3%
+  Micrococcus                              0.98 / 10 /  66.3%           0.98 /  7 /  66.3%
+  Fusobacterium                           0.999 / 10 /  51.8%          0.999 / 15 /  54.0%
+  Cetobacterium                           0.999 / 10 /  75.0%          0.999 / 15 /  75.0%
+  Leptotrichia                                1 / 10 /  93.7%              1 / 15 /  93.7%
+  Sneathia                                    1 / 10 / 100.0%              1 / 15 / 100.0%
+  Streptobacillus                             1 / 10 / 100.0%              1 / 15 / 100.0%
+  Campylobacter                               1 / 10 /  91.4%              1 / 15 /  91.0%
+  Helicobacter                                1 / 10 /  85.6%              1 / 15 /  85.9%
+
+  Goal reached: v1 29 / 34, v2 29 / 34. Probes: v1 299, v2 394;
+  271 probes appear in both.
+
+
+METHOD
+------
+  bac-probes design (see the command above and every setting in command.txt):
+  - Candidates: 32-mers in >= 2% of the taxon's sequences, GC 35%-65%, no homopolymers >= 5.
+  - Exact off-target counts against all other SILVA sequences.
+  - BLAST (>= 85.0% identity) on up to 120 candidates per taxon at distinct sites,
+    half chosen for coverage and half for exact specificity. Selection uses
+    blast_weighted_specificity: off-target near-matches weighted by where
+    their mismatches fall (central mismatches ~ won't bind).
+  - Selection: specificity floors 1,0.999,0.995,0.99,0.98,0.95,0.9 tried strict to loose;
+    the strictest whose probe set reaches 50% pooled coverage is used.
+    Up to 15 probes at distinct sites (no shared 16-mer); each pick adds the
+    most not-yet-covered sequences, then spare slots are filled with further
+    specific probes. Ties break on the k-mer sequence, so reruns match.
+  - Spacing (--min-gap 10): probes binding the same target sequence are kept
+    at least 10 bp apart, so they don't compete for the same molecule.
+
+
+RESULTS (394 probes)
+---------------------
+  Taxon                        Target seqs   Floor  Probes   Pooled   Probe cov. range  Min spec  Exact off
+  Staphylococcus                     6,416   0.995      13    94.0%          2.0-48.0%    0.9955        136
+  Streptococcus                      7,073   0.999      15    78.5%          2.1-34.0%    0.9990         14
+  Enterococcus                       2,061   0.995       7    60.6%          2.7-43.4%    0.9975          4
+  Lactobacillus                      1,408   0.995      15    55.1%          2.1-20.2%    0.9950         12
+  Clostridium sensu stricto 1        1,941   0.995      15    61.8%          2.1-17.1%    0.9952         32
+  Lachnospira                          141    0.95       5    17.7%          2.1-10.6%    0.9518          1  *
+  Blautia                            3,091    0.95       4     5.6%           2.0-2.9%    0.9595         25  *
+  Anaerostipes                         491     0.9       7    13.8%           2.4-7.3%    0.9374          3  *
+  Ruminococcus                       1,442     0.9      15    57.8%          2.1-13.9%    0.9065         69
+  Escherichia-Shigella               7,667   0.995       3    91.9%          2.0-90.4%    0.9955         49
+  Enterobacter                       2,404    0.95       2     5.7%           2.5-3.2%    0.9645          7  *
+  Salmonella                         5,327   0.995       2    43.9%          2.5-41.4%    0.9957          8  *
+  Pseudomonas                        9,234   0.995      15    89.5%          3.1-29.3%    0.9955         80
+  Moraxella                            345    0.99      10    90.7%          2.3-71.0%    0.9910          7
+  Acinetobacter                      3,378   0.999      10    55.0%          2.1-25.9%    0.9990          3
+  Neisseria                          1,395   0.999       6    56.9%          2.2-28.3%    0.9991          0
+  Bacteroides                        3,747   0.995      15    75.3%          2.1-18.5%    0.9956         27
+  Prevotella                         2,199    0.99      15    54.6%          2.2-21.2%    0.9902         14
+  Porphyromonas                        714       1      15    80.7%          3.2-48.7%    1.0000          0
+  Tannerella                            83       1      15    63.9%          2.4-20.5%    1.0000          0
+  Parabacteroides                      472    0.99      14    51.5%          2.5-24.1%    0.9913          5
+  Alistipes                            555   0.995      15    55.9%          2.2-13.3%    0.9969          1
+  Cutibacterium                      1,693   0.995       5    84.2%          3.4-61.5%    0.9953         12
+  Corynebacterium                    3,609   0.995      15    79.7%          2.3-48.3%    0.9955         30
+  Actinomyces                          717   0.995      15    72.0%          2.2-44.5%    0.9959          2
+  Bifidobacterium                      708       1      14    61.3%          2.5-17.8%    1.0000          0
+  Micrococcus                          332    0.98       7    66.3%          3.0-36.1%    0.9845          8
+  Fusobacterium                      1,164   0.999      15    54.0%          2.1-14.6%    0.9991          1
+  Cetobacterium                        136   0.999      15    75.0%          2.2-39.7%    0.9995          0
+  Leptotrichia                         349       1      15    93.7%          4.0-78.5%    1.0000          0
+  Sneathia                              11       1      15   100.0%          9.1-90.9%    1.0000          0
+  Streptobacillus                       30       1      15   100.0%          3.3-56.7%    1.0000          0
+  Campylobacter                      1,035       1      15    91.0%          2.3-68.3%    1.0000          0
+  Helicobacter                         640       1      15    85.9%          2.2-58.6%    1.0000          0
+
+  Floor = specificity floor used; Pooled = sequences hit by at least one probe;
+  Probe cov. range = single-probe coverage of the selected probes; Min spec =
+  lowest blast_weighted_specificity among them; Exact off = exact
+  off-target matches summed over the selected probes.  * = goal not reached.
+
+  Fewer than 15 probes: Staphylococcus (13), Enterococcus (7), Lachnospira (5), Blautia (4), Anaerostipes (7), Escherichia-Shigella (3), Enterobacter (2), Salmonella (2), Moraxella (10), Acinetobacter (10), Neisseria (6), Parabacteroides (14), Cutibacterium (5), Bifidobacterium (14), Micrococcus (7).
+  Only that many distinct sites passed the floor that reached the goal; a
+  looser floor would allow more probes but less specific ones.
+
+Main BLAST off-targets (taxon most often the top off-target of a selected probe):
+  Staphylococcus               Bacillus (5); Streptococcus (2); Oceanobacillus (1)
+  Streptococcus                Lactococcus (5); Staphylococcus (2); Lactobacillus (1)
+  Enterococcus                 Anoxybacillus (2); Desemzia (1); Mycoplasma (1)
+  Lactobacillus                Streptococcus (6); Limosilactobacillus (4); Clostridium sensu stricto 1 (1)
+  Clostridium sensu stricto 1  uncultured (4); Acinetobacter (1); Staphylococcus (1)
+  Lachnospira                  uncultured (2); Lachnospiraceae UCG-001 (1); [Eubacterium] eligens group (1)
+  Blautia                      uncultured (3); Bacillus (1)
+  Anaerostipes                 uncultured (2); Lachnoclostridium (1); Blautia (1)
+  Ruminococcus                 uncultured (8); Clostridium sensu stricto 1 (2); Salinibacter (1)
+  Escherichia-Shigella         Salmonella (2); Vibrio (1)
+  Enterobacter                 Klebsiella (2)
+  Salmonella                   Pseudomonas (1); Escherichia-Shigella (1)
+  Pseudomonas                  uncultured (3); Vibrio (2); Escherichia-Shigella (1)
+  Moraxella                    Psychrobacter (1); Stenotrophomonas (1); Halomonas (1)
+  Acinetobacter                Pseudomonas (5); uncultured (2); Streptomyces (1)
+  Neisseria                    Massilia (2); Kingella (2); Candidatus Ovatusbacter (1)
+  Bacteroides                  uncultured (4); Prevotella (4); uncultured bacterium (2)
+  Prevotella                   Prevotella_9 (6); Prevotella_7 (3); uncultured (3)
+  Porphyromonas                Bacteroides (3); Pedobacter (2); Paludibacter (2)
+  Tannerella                   uncultured bacterium (3); Bacteroides (3); uncultured (2)
+  Parabacteroides              uncultured (7); uncultured bacterium (2); Prevotella (2)
+  Alistipes                    uncultured (4); Rikenella (3); uncultured bacterium (3)
+  Cutibacterium                Pseudopropionibacterium (1); Acidipropionibacterium (1); Actinomyces (1)
+  Corynebacterium              Mycobacterium (3); Streptomyces (2); Pseudonocardia (1)
+  Actinomyces                  Cutibacterium (3); Leucobacter (1); Pantoea (1)
+  Bifidobacterium              Alloscardovia (2); Citricoccus (2); Fulvivirga (1)
+  Micrococcus                  Bifidobacterium (2); Corynebacterium (2); Streptomyces (1)
+  Fusobacterium                uncultured (3); uncultured bacterium (3); Cetobacterium (2)
+  Cetobacterium                Fusobacterium (5); uncultured (2); Plesiomonas (2)
+  Leptotrichia                 uncultured (3); uncultured bacterium (2); Cetobacterium (1)
+  Sneathia                     uncultured bacterium (2); uncultured (2); Oceanivirga (2)
+  Streptobacillus              Leptotrichia (4); Sneathia (1); Legionella (1)
+  Campylobacter                uncultured (4); Sulfurovum (2); Sulfurospirillum (2)
+  Helicobacter                 uncultured (4); Sulfurimonas (4); Sulfurovum (2)
+
+
+FILES
+-----
+  design_summary.csv          one row per taxon (columns explained in the README)
+  all_selected_probes.csv     every selected probe
+  selected/<taxon>_selected_probes.csv   per-taxon probes in pick order, with
+                              new_seqs_covered and cumulative_coverage_pct
+  command.txt                 exact command, bac-probes version, date, all settings
+  design.log                  run log
+  Genus_v2_run_summary.txt     this summary
+
+
+CAVEATS
+-------
+  - Only up to 120 candidates per taxon were BLASTed; others were not
+    considered for selection.
+  - No selected probe hit the BLAST max_target_seqs cap. The cap warnings in
+    design.log refer to other BLASTed candidates (very universal k-mers)
+    that were not selected.
+  - Coverage and specificity are measured against SILVA 138.1 only; taxa that
+    are under-represented or mislabelled in SILVA may behave differently.

@@ -1,0 +1,7 @@
+taxa,level,probe_rank,kmer,probe,length,gc_pct,conservation_pct,target_seqs,target_hits,exact_offtarget,exact_bg_seqs,exact_specificity,exact_precision,blast_total_hits,blast_target_hits,blast_offtarget_hits,blast_weighted_offtarget,blast_specificity,blast_weighted_specificity,blast_top_offtarget,blast_capped,new_seqs_covered,cumulative_coverage_pct
+Fusobacteriota,phylum,1,TTGTAGGAATGCCGATGGGGAAGCCAGCTTAC,GTAAGCTGGCTTCCCCATCGGCATTCCTACAA,32,53.1,43.36,1838,797,0,508670,1.0,1.0,1845,1310,535,0.0,0.710027,1.0,Proteobacteria,False,797,43.36
+Fusobacteriota,phylum,2,AAATGCGGGGCTCAACTCCGTATTGCGTTGGA,TCCAACGCAATACGGAGTTGAGCCCCGCATTT,32,53.1,16.49,1838,303,0,508670,1.0,1.0,1723,1305,418,0.0,0.7574,1.0,Firmicutes,False,274,58.27
+Fusobacteriota,phylum,3,AGGTGGACGGAACTGCACGAGTAGAGGTGAAA,TTTCACCTCTACTCGTGCAGTTCCGTCCACCT,32,53.1,14.91,1838,274,0,508670,1.0,1.0,647,607,40,0.0,0.938176,1.0,Proteobacteria,False,274,73.18
+Fusobacteriota,phylum,4,AGTACTGGAGAGGTAGGCGGAACTACAAGTGT,ACACTTGTAGTTCCGCCTACCTCTCCAGTACT,32,50.0,10.94,1838,201,0,508670,1.0,1.0,1471,1427,44,0.0,0.970088,1.0,Proteobacteria,False,170,82.43
+Fusobacteriota,phylum,5,CAGGGCTCAACTCTGTATTGCGTTGGAAACTG,CAGTTTCCAACGCAATACAGAGTTGAGCCCTG,32,50.0,38.41,1838,706,0,508670,1.0,1.0,1688,1293,395,0.0,0.765995,1.0,Firmicutes,False,28,83.95
+Fusobacteriota,phylum,6,GGAATGCCGATGATGAAGATAGTTCACTGGAC,GTCCAGTGAACTATCTTCATCATCGGCATTCC,32,46.9,13.87,1838,255,0,508670,1.0,1.0,489,481,8,0.0,0.98364,1.0,Planctomycetota,False,20,85.04
