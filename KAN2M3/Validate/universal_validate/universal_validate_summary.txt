@@ -1,0 +1,104 @@
+UNIVERSAL BACTERIA PROBE VALIDATION - RUN SUMMARY
+=================================================
+Run: bac-probes 0.1.0, 2026-10-05
+Input: universal_bacteria_validate.csv (13 probes, 32-40 bp, taxa Bacteria, level domain)
+Database: SILVA 138.1 SSURef NR99 (510,508 sequences) + SILVA BLAST database
+Target: domain Bacteria (431,575 sequences). Off-targets: Archaea (20,389) and
+Eukaryota (58,544).
+
+Command:
+  bac-probes validate silva_db/SILVA_138.1_SSURef_NR99_tax_silva_full_align_trunc.fasta.gz KAN2M3/Validate/universal_validate/universal_bacteria_validate.csv --blast --blast-max-target-seqs 500000 --breakdown phylum --min-seqs 500 --threads 14 --output KAN2M3/Validate/universal_validate/validation_results.tsv
+
+  --blast-max-target-seqs 500000: must exceed the 431,575 bacterial sequences,
+  or BLAST stops before reaching off-target near-matches.
+  --breakdown phylum: coverage per bacterial phylum (phyla with >= 500 seqs).
+
+
+HEADLINE
+--------
+  - Highly specific: every probe has BLAST weighted specificity >= 0.99999,
+    and there is only 1 exact off-target match in total (probe 1, one
+    Metazoa sequence). No probe hit the BLAST hit cap.
+  - Not universal: together the 13 probes exactly match 17.7% of bacterial
+    sequences (76,344 / 431,575). Individually they match 0-10%.
+  - Several probes start on a universal 16S site (probe 1 begins with the 515F
+    primer sequence GCAGCCGCGGTAATAC; probe 13 sits in the V3 region) but, at
+    32-40 bp, extend into variable regions shared only by some groups. Several
+    match mainly Enterobacteriaceae-like sequences.
+
+
+PER-PROBE RESULTS (input order)
+-------------------------------
+  #   Sequence (as supplied)                  Len   Exact    BLAST    Exact  BLAST
+                                                    cov.     near-    off    wspec
+                                                             match
+  1   GCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATC       36    8.1%    80.6%     1   0.999994
+  2   AGGCCTTCGGGTTGTAAAGCACTTTCAGCGGGGAGG       36    0.9%    14.1%     0   1.000000
+  3   GTAGCTAATACCGCATAACGTCGCAAGACCAA           32    3.1%     5.6%     0   1.000000
+  4   CCTGATGGAGGGGGATAACTACTGGAAACGGTAGCTAATA   40    3.6%     8.0%     0   1.000000
+  5   TGGAGGGGGATAACTACTGGAAACGGTAGCTAATACCGCA   40    4.1%    19.3%     0   1.000000
+  6   GGAGTGAGTAACACGTGAGTAACCTGCCCTTGACTCTGGG   40    0.0%     4.3%     0   1.000000
+  7   TGACGTCAAATCATCATGCCCCTTATGATTTGGG         34    2.9%    18.6%     0   1.000000
+  8   GGTGATCGGCCACACTGGAACTGAGACACGGTCCAG       36    1.7%    60.1%     0   0.999999
+  9   ATCATCATGCCCCTTATGATTTGGGCTACACACGTGCT     38    3.0%    47.0%     0   1.000000
+  10  GGGTGCCTAATACATGCAAGTCGAGCGGACAGATGGGA     38    0.0%     1.5%     0   1.000000
+  11  TTGTAGGCTGCAACTCGCCTACATGAAGTCGGAATCGCTA   40    1.9%    64.9%     0   1.000000
+  12  GGATAACTACTGGAAACGGTAGCTAATACCGCATAACGTC   40    3.4%    14.7%     0   1.000000
+  13  GGCAGCAGTGGGGAATATTGCACAATGGGCGC           32    9.8%    76.7%     0   1.000000
+
+  Exact cov. = bacterial sequences containing the probe exactly (either strand).
+  BLAST near-match = bacterial sequences BLAST aligns to the probe at >= 85%
+  identity (a rough upper bound on what could bind; most carry mismatches).
+  Probes 6 and 10 exactly match only 2 and 4 bacterial sequences.
+
+  Several probes overlap heavily, so on a molecule carrying both they would
+  compete for the same site:
+    probes 4 and 5 share 35 bp; 4, 5 and 12 all contain
+    GGATAACTACTGGAAACGGTAGCTAATA; probes 3, 5 and 12 share
+    GTAGCTAATACCGCA (3 and 12 share 22 bp); probes 7 and 9 share 25 bp
+    (ATCATCATGCCCCTTATGATTTGGG).
+
+
+POOLED COVERAGE BY PHYLUM (validation_results_breakdown.tsv)
+------------------------------------------------------------
+  All bacteria          17.7%
+  Proteobacteria          30%   (40,933 / 136,158)
+  Actinobacteriota        26%   (10,492 / 39,596)
+  Firmicutes              20%   (23,417 / 117,419)
+  Acidobacteriota          5%
+  Desulfobacterota         5%
+  Dependentiae             5%
+  Bdellovibrionota         2%
+  Bacteroidota, Campylobacterota, Fusobacteriota, Cyanobacteria and all other
+  phyla with >= 500 sequences: 0-1%.
+
+
+WHAT THIS MEANS
+---------------
+  - As a universal set these probes would miss most bacteria, including
+    essentially all Bacteroidota, Campylobacterota and Fusobacteriota.
+  - Exact coverage is a strict measure; the higher BLAST near-match numbers
+    (up to ~81% for probe 1) show many more sequences differ by only a few
+    bases. Whether those bind depends on where the mismatches fall, so the
+    real coverage is somewhere between the exact and near-match figures.
+  - For comparison, the universal set designed with bac-probes design
+    (KAN2M3/Bacteria) reaches 95.3% exact coverage with 15 probes at similar
+    specificity.
+
+
+CAVEATS
+-------
+  - SILVA classifies chloroplasts (5,049 sequences) and some mitochondria
+    (1,188) as Bacteria, so binding to organelle rRNA counts as coverage here,
+    not off-target.
+  - Large-subunit rRNA (23S/28S) is not in this database, so binding to it is
+    not checked. Coverage and specificity are measured against SILVA 138.1 only.
+
+
+FILES
+-----
+  universal_bacteria_validate.csv     input probes (as supplied)
+  validation_results.tsv              one row per probe (validate --blast output)
+  validation_results_breakdown.tsv    per-phylum coverage, k1-k13 = probes in input order
+  validate.log                        run log
+  universal_validate_summary.txt      this summary

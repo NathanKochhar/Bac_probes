@@ -1,0 +1,67 @@
+
+Validating 13 probe(s) across 1 taxon group(s) in a single SILVA pass …
+
+BLASTing 13 probe(s) for 'Bacteria' …
+
+    taxa  level                                 sequence  probe_len  target_seqs  coverage_count  coverage_pct  exact_offtarget  exact_specificity top_offtargets  blast_weighted_specificity blast_top_offtarget
+Bacteria domain     GCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATC         36       431575           34828          8.07                1           0.999987    Metazoa (1)                    0.999994           Eukaryota
+Bacteria domain     AGGCCTTCGGGTTGTAAAGCACTTTCAGCGGGGAGG         36       431575            3885          0.90                0           1.000000                                   1.000000                    
+Bacteria domain         GTAGCTAATACCGCATAACGTCGCAAGACCAA         32       431575           13205          3.06                0           1.000000                                   1.000000                    
+Bacteria domain CCTGATGGAGGGGGATAACTACTGGAAACGGTAGCTAATA         40       431575           15572          3.61                0           1.000000                                   1.000000             Archaea
+Bacteria domain TGGAGGGGGATAACTACTGGAAACGGTAGCTAATACCGCA         40       431575           17657          4.09                0           1.000000                                   1.000000             Archaea
+Bacteria domain GGAGTGAGTAACACGTGAGTAACCTGCCCTTGACTCTGGG         40       431575               2          0.00                0           1.000000                                   1.000000             Archaea
+Bacteria domain       TGACGTCAAATCATCATGCCCCTTATGATTTGGG         34       431575           12541          2.91                0           1.000000                                   1.000000                    
+Bacteria domain     GGTGATCGGCCACACTGGAACTGAGACACGGTCCAG         36       431575            7351          1.70                0           1.000000                                   0.999999           Eukaryota
+Bacteria domain   ATCATCATGCCCCTTATGATTTGGGCTACACACGTGCT         38       431575           12810          2.97                0           1.000000                                   1.000000           Eukaryota
+Bacteria domain   GGGTGCCTAATACATGCAAGTCGAGCGGACAGATGGGA         38       431575               4          0.00                0           1.000000                                   1.000000                    
+Bacteria domain TTGTAGGCTGCAACTCGCCTACATGAAGTCGGAATCGCTA         40       431575            8227          1.91                0           1.000000                                   1.000000             Archaea
+Bacteria domain GGATAACTACTGGAAACGGTAGCTAATACCGCATAACGTC         40       431575           14483          3.36                0           1.000000                                   1.000000                    
+Bacteria domain         GGCAGCAGTGGGGAATATTGCACAATGGGCGC         32       431575           42362          9.82                0           1.000000                                   1.000000           Eukaryota
+
+Results written to KAN2M3/Validate/universal_validate/validation_results.tsv
+
+Coverage by phylum (k1, k2, … = probes in input order per taxon):
+  Bacteria  k1 = GCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATC
+  Bacteria  k2 = AGGCCTTCGGGTTGTAAAGCACTTTCAGCGGGGAGG
+  Bacteria  k3 = GTAGCTAATACCGCATAACGTCGCAAGACCAA
+  Bacteria  k4 = CCTGATGGAGGGGGATAACTACTGGAAACGGTAGCTAATA
+  Bacteria  k5 = TGGAGGGGGATAACTACTGGAAACGGTAGCTAATACCGCA
+  Bacteria  k6 = GGAGTGAGTAACACGTGAGTAACCTGCCCTTGACTCTGGG
+  Bacteria  k7 = TGACGTCAAATCATCATGCCCCTTATGATTTGGG
+  Bacteria  k8 = GGTGATCGGCCACACTGGAACTGAGACACGGTCCAG
+  Bacteria  k9 = ATCATCATGCCCCTTATGATTTGGGCTACACACGTGCT
+  Bacteria  k10 = GGGTGCCTAATACATGCAAGTCGAGCGGACAGATGGGA
+  Bacteria  k11 = TTGTAGGCTGCAACTCGCCTACATGAAGTCGGAATCGCTA
+  Bacteria  k12 = GGATAACTACTGGAAACGGTAGCTAATACCGCATAACGTC
+  Bacteria  k13 = GGCAGCAGTGGGGAATATTGCACAATGGGCGC
+
+    taxa  level                      subtaxon  total_seqs                  k1                 k2                  k3                  k4                  k5              k6                  k7                 k8                  k9             k10                k11                 k12                 k13        pool_coverage
+Bacteria domain                           ALL      431575 34828/431575 (8.1%) 3885/431575 (0.9%) 13205/431575 (3.1%) 15572/431575 (3.6%) 17657/431575 (4.1%) 2/431575 (0.0%) 12541/431575 (2.9%) 7351/431575 (1.7%) 12810/431575 (3.0%) 4/431575 (0.0%) 8227/431575 (1.9%) 14483/431575 (3.4%) 42362/431575 (9.8%) 76344/431575 (17.7%)
+Bacteria domain                Proteobacteria      136158  34419/136158 (25%)   3885/136158 (3%)  13179/136158 (10%)  15547/136158 (11%)  17631/136158 (13%)   0/136158 (0%)      24/136158 (0%)      9/136158 (0%)      24/136158 (0%)   0/136158 (0%)     39/136158 (0%)  14459/136158 (11%)  30633/136158 (22%)   40933/136158 (30%)
+Bacteria domain                    Firmicutes      117419       8/117419 (0%)      0/117419 (0%)      20/117419 (0%)      15/117419 (0%)      16/117419 (0%)   0/117419 (0%)  12402/117419 (11%)   6514/117419 (6%)  12670/117419 (11%)   4/117419 (0%)   8040/117419 (7%)      16/117419 (0%)    1205/117419 (1%)   23417/117419 (20%)
+Bacteria domain                  Bacteroidota       46851        2/46851 (0%)       0/46851 (0%)        4/46851 (0%)        4/46851 (0%)        4/46851 (0%)    0/46851 (0%)       46/46851 (0%)       8/46851 (0%)       47/46851 (0%)    0/46851 (0%)      17/46851 (0%)        4/46851 (0%)        8/46851 (0%)        84/46851 (0%)
+Bacteria domain              Actinobacteriota       39596        2/39596 (0%)       0/39596 (0%)        1/39596 (0%)        2/39596 (0%)        2/39596 (0%)    2/39596 (0%)       43/39596 (0%)       6/39596 (0%)       46/39596 (0%)    0/39596 (0%)      27/39596 (0%)        1/39596 (0%)   10439/39596 (26%)    10492/39596 (26%)
+Bacteria domain               Acidobacteriota       11565        1/11565 (0%)       0/11565 (0%)        0/11565 (0%)        1/11565 (0%)        1/11565 (0%)    0/11565 (0%)        0/11565 (0%)     614/11565 (5%)        0/11565 (0%)    0/11565 (0%)       1/11565 (0%)        1/11565 (0%)        3/11565 (0%)       620/11565 (5%)
+Bacteria domain                 Cyanobacteria       10607        1/10607 (0%)       0/10607 (0%)        0/10607 (0%)        1/10607 (0%)        1/10607 (0%)    0/10607 (0%)        0/10607 (0%)       2/10607 (0%)        1/10607 (0%)    0/10607 (0%)      54/10607 (1%)        0/10607 (0%)        2/10607 (0%)        60/10607 (1%)
+Bacteria domain                   Chloroflexi        9069         0/9069 (0%)        0/9069 (0%)         0/9069 (0%)         0/9069 (0%)         0/9069 (0%)     0/9069 (0%)         0/9069 (0%)        2/9069 (0%)         0/9069 (0%)     0/9069 (0%)        1/9069 (0%)         0/9069 (0%)         2/9069 (0%)          5/9069 (0%)
+Bacteria domain               Planctomycetota        8686         1/8686 (0%)        0/8686 (0%)         0/8686 (0%)         0/8686 (0%)         0/8686 (0%)     0/8686 (0%)         0/8686 (0%)        1/8686 (0%)         0/8686 (0%)     0/8686 (0%)        5/8686 (0%)         0/8686 (0%)         1/8686 (0%)          8/8686 (0%)
+Bacteria domain              Desulfobacterota        7942       380/7942 (5%)        0/7942 (0%)         1/7942 (0%)         1/7942 (0%)         1/7942 (0%)     0/7942 (0%)         4/7942 (0%)        2/7942 (0%)         3/7942 (0%)     0/7942 (0%)        3/7942 (0%)         1/7942 (0%)         2/7942 (0%)        390/7942 (5%)
+Bacteria domain             Verrucomicrobiota        6834         0/6834 (0%)        0/6834 (0%)         0/6834 (0%)         0/6834 (0%)         0/6834 (0%)     0/6834 (0%)        13/6834 (0%)        0/6834 (0%)        12/6834 (0%)     0/6834 (0%)       11/6834 (0%)         0/6834 (0%)         1/6834 (0%)         25/6834 (0%)
+Bacteria domain              Campylobacterota        4820        10/4820 (0%)        0/4820 (0%)         0/4820 (0%)         0/4820 (0%)         0/4820 (0%)     0/4820 (0%)         2/4820 (0%)        2/4820 (0%)         1/4820 (0%)     0/4820 (0%)        0/4820 (0%)         0/4820 (0%)        10/4820 (0%)         24/4820 (0%)
+Bacteria domain               Patescibacteria        4544         0/4544 (0%)        0/4544 (0%)         0/4544 (0%)         0/4544 (0%)         0/4544 (0%)     0/4544 (0%)         0/4544 (0%)        1/4544 (0%)         0/4544 (0%)     0/4544 (0%)        0/4544 (0%)         0/4544 (0%)         1/4544 (0%)          2/4544 (0%)
+Bacteria domain                 Spirochaetota        4183         0/4183 (0%)        0/4183 (0%)         0/4183 (0%)         0/4183 (0%)         0/4183 (0%)     0/4183 (0%)         0/4183 (0%)        6/4183 (0%)         0/4183 (0%)     0/4183 (0%)        2/4183 (0%)         0/4183 (0%)         0/4183 (0%)          8/4183 (0%)
+Bacteria domain                   Myxococcota        3064         0/3064 (0%)        0/3064 (0%)         0/3064 (0%)         0/3064 (0%)         0/3064 (0%)     0/3064 (0%)         0/3064 (0%)        1/3064 (0%)         0/3064 (0%)     0/3064 (0%)        0/3064 (0%)         0/3064 (0%)         0/3064 (0%)          1/3064 (0%)
+Bacteria domain               Gemmatimonadota        2121         0/2121 (0%)        0/2121 (0%)         0/2121 (0%)         0/2121 (0%)         0/2121 (0%)     0/2121 (0%)         0/2121 (0%)        0/2121 (0%)         0/2121 (0%)     0/2121 (0%)        1/2121 (0%)         0/2121 (0%)         0/2121 (0%)          1/2121 (0%)
+Bacteria domain                Fusobacteriota        1838         0/1838 (0%)        0/1838 (0%)         0/1838 (0%)         0/1838 (0%)         0/1838 (0%)     0/1838 (0%)         4/1838 (0%)        1/1838 (0%)         4/1838 (0%)     0/1838 (0%)        6/1838 (0%)         0/1838 (0%)         3/1838 (0%)         14/1838 (1%)
+Bacteria domain              Bdellovibrionota        1675         1/1675 (0%)        0/1675 (0%)         0/1675 (0%)         0/1675 (0%)         0/1675 (0%)     0/1675 (0%)         0/1675 (0%)        2/1675 (0%)         0/1675 (0%)     0/1675 (0%)        0/1675 (0%)         0/1675 (0%)        24/1675 (1%)         27/1675 (2%)
+Bacteria domain                  Nitrospirota        1251         0/1251 (0%)        0/1251 (0%)         0/1251 (0%)         0/1251 (0%)         0/1251 (0%)     0/1251 (0%)         0/1251 (0%)        6/1251 (0%)         0/1251 (0%)     0/1251 (0%)        0/1251 (0%)         0/1251 (0%)         0/1251 (0%)          6/1251 (0%)
+Bacteria domain                  Synergistota         943          0/943 (0%)         0/943 (0%)          0/943 (0%)          0/943 (0%)          0/943 (0%)      0/943 (0%)          1/943 (0%)         4/943 (0%)          0/943 (0%)      0/943 (0%)         2/943 (0%)          0/943 (0%)          2/943 (0%)           9/943 (1%)
+Bacteria domain                  Deinococcota         888          0/888 (0%)         0/888 (0%)          0/888 (0%)          0/888 (0%)          0/888 (0%)      0/888 (0%)          0/888 (0%)         0/888 (0%)          0/888 (0%)      0/888 (0%)         0/888 (0%)          0/888 (0%)          0/888 (0%)           0/888 (0%)
+Bacteria domain                Armatimonadota         778          0/778 (0%)         0/778 (0%)          0/778 (0%)          0/778 (0%)          0/778 (0%)      0/778 (0%)          0/778 (0%)         0/778 (0%)          0/778 (0%)      0/778 (0%)         2/778 (0%)          0/778 (0%)          0/778 (0%)           2/778 (0%)
+Bacteria domain                Fibrobacterota         743          0/743 (0%)         0/743 (0%)          0/743 (0%)          0/743 (0%)          0/743 (0%)      0/743 (0%)          1/743 (0%)         0/743 (0%)          1/743 (0%)      0/743 (0%)         0/743 (0%)          0/743 (0%)          0/743 (0%)           1/743 (0%)
+Bacteria domain Marinimicrobia (SAR406 clade)         664          1/664 (0%)         0/664 (0%)          0/664 (0%)          0/664 (0%)          0/664 (0%)      0/664 (0%)          0/664 (0%)         0/664 (0%)          0/664 (0%)      0/664 (0%)         1/664 (0%)          0/664 (0%)          0/664 (0%)           2/664 (0%)
+Bacteria domain  SAR324 clade(Marine group B)         629          1/629 (0%)         0/629 (0%)          0/629 (0%)          0/629 (0%)          0/629 (0%)      0/629 (0%)          0/629 (0%)         0/629 (0%)          0/629 (0%)      0/629 (0%)         0/629 (0%)          0/629 (0%)          4/629 (1%)           5/629 (1%)
+Bacteria domain                  Dependentiae         584          0/584 (0%)         0/584 (0%)          0/584 (0%)          0/584 (0%)          0/584 (0%)      0/584 (0%)          0/584 (0%)         7/584 (1%)          0/584 (0%)      0/584 (0%)         0/584 (0%)          0/584 (0%)         21/584 (4%)          27/584 (5%)
+Bacteria domain              Latescibacterota         505          0/505 (0%)         0/505 (0%)          0/505 (0%)          0/505 (0%)          0/505 (0%)      0/505 (0%)          0/505 (0%)         0/505 (0%)          0/505 (0%)      0/505 (0%)         1/505 (0%)          0/505 (0%)          0/505 (0%)           1/505 (0%)
+
+Breakdown written to KAN2M3\Validate\universal_validate\validation_results_breakdown.tsv
